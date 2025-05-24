@@ -7,7 +7,7 @@
   "private": true,
   "workspaces": [
     "mall-api",
-    "mall-admin", 
+    "mall-admin",
     "mall-miniprogram"
   ],
   "scripts": {
@@ -33,7 +33,7 @@
     "test:coverage:admin": "cd mall-admin && npm run test:coverage",
     "lint": "npm run lint:api && npm run lint:admin && npm run lint:miniprogram",
     "lint:api": "cd mall-api && npm run lint",
-    "lint:admin": "cd mall-admin && npm run lint", 
+    "lint:admin": "cd mall-admin && npm run lint",
     "lint:miniprogram": "cd mall-miniprogram && npm run lint",
     "lint:fix": "npm run lint:fix:api && npm run lint:fix:admin && npm run lint:fix:miniprogram",
     "lint:fix:api": "cd mall-api && npm run lint:fix",
@@ -78,7 +78,7 @@
   },
   "keywords": [
     "微信小程序",
-    "商城系统", 
+    "商城系统",
     "电商",
     "uni-app",
     "vue3",
@@ -95,11 +95,17 @@
   },
   "homepage": "https://github.com/your-username/wechat-mall-system#readme",
   "commitlint": {
-    "extends": ["@commitlint/config-conventional"]
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
   },
   "lint-staged": {
-    "*.{js,ts,vue}": ["eslint --fix"],
-    "*.{js,ts,vue,css,scss,md}": ["prettier --write"]
+    "*.{js,ts,vue}": [
+      "eslint --fix"
+    ],
+    "*.{js,ts,vue,css,scss,md}": [
+      "prettier --write"
+    ]
   },
   "husky": {
     "hooks": {
@@ -107,4 +113,4 @@
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
   }
-} 
+}

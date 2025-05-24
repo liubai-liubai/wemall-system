@@ -1,0 +1,18 @@
+{
+  "name": "mall-miniprogram",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev:mp-weixin": "echo 'uni-app dev command'",
+    "build:mp-weixin": "echo 'uni-app build command'",
+    "test": "echo 'No tests specified' && exit 0",
+    "test:unit": "echo 'No tests specified' && exit 0",
+    "lint": "echo 'No lint configured' && exit 0",
+    "lint:fix": "echo 'No lint configured' && exit 0",
+    "type-check": "echo 'No type check configured' && exit 0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

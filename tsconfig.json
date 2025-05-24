@@ -57,11 +57,7 @@
     "incremental": true,
     "tsBuildInfoFile": "./node_modules/.cache/tsbuildinfo"
   },
-  "include": [
-    "packages/*/src/**/*",
-    "packages/*/types/**/*",
-    "**/*.d.ts"
-  ],
+  "include": ["packages/*/src/**/*", "packages/*/types/**/*", "**/*.d.ts"],
   "exclude": [
     "node_modules",
     "dist",
@@ -76,4 +72,4 @@
     { "path": "./packages/mall-admin" },
     { "path": "./packages/mall-miniprogram" }
   ]
-} 
+}

@@ -172,7 +172,7 @@ project.private.config.json
 .local
 
 # Package manager lock files (if using different package managers)
-package-lock.json
+# package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
