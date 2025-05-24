@@ -1,40 +1,100 @@
+/**
+ * 统一响应格式工具
+ * 提供标准化的API响应格式，确保所有接口返回格式一致
+ * @author AI Assistant
+ * @since 1.0.0
+ */
+
 import { Context } from 'koa';
-import { ApiResponse, PageData } from '../types/common.js';
 
 /**
- * 成功响应工具函数
- * @param ctx Koa上下文对象
+ * API响应基础接口
+ */
+interface ApiResponse<T = unknown> {
+  code: number;        // 状态码
+  message: string;     // 消息
+  data: T;            // 数据
+  timestamp: number;   // 时间戳
+}
+
+/**
+ * 分页响应数据接口
+ */
+interface PageData<T> {
+  list: T[];          // 数据列表
+  total: number;      // 总数
+  page: number;       // 当前页
+  size: number;       // 页大小
+  pages: number;      // 总页数
+}
+
+/**
+ * 成功响应
+ * @param ctx Koa上下文
  * @param data 响应数据
  * @param message 响应消息
+ * @param code HTTP状态码
  */
-export const success = <T>(ctx: Context, data: T, message = '操作成功'): void => {
+export function success<T>(
+  ctx: Context,
+  data: T,
+  message: string = '操作成功',
+  code: number = 200
+): void {
   const response: ApiResponse<T> = {
-    code: 200,
+    code,
     message,
     data,
     timestamp: Date.now()
   };
+  
+  ctx.status = code;
   ctx.body = response;
-};
+}
 
 /**
- * 分页成功响应工具函数
- * @param ctx Koa上下文对象
+ * 错误响应
+ * @param ctx Koa上下文
+ * @param message 错误消息
+ * @param code HTTP状态码
+ * @param data 错误详情数据
+ */
+export function error<T = null>(
+  ctx: Context,
+  message: string,
+  code: number = 500,
+  data: T = null as T
+): void {
+  const response: ApiResponse<T> = {
+    code,
+    message,
+    data,
+    timestamp: Date.now()
+  };
+  
+  ctx.status = code;
+  ctx.body = response;
+}
+
+/**
+ * 分页响应
+ * @param ctx Koa上下文
  * @param list 数据列表
  * @param total 总数
  * @param page 当前页
  * @param size 页大小
  * @param message 响应消息
  */
-export const successPage = <T>(
+export function paginate<T>(
   ctx: Context,
   list: T[],
   total: number,
   page: number,
   size: number,
-  message = '查询成功'
-): void => {
+  message: string = '获取成功'
+): void {
   const pages = Math.ceil(total / size);
+  
   const pageData: PageData<T> = {
     list,
     total,
@@ -43,75 +103,24 @@ export const successPage = <T>(
     pages
   };
   
-  const response: ApiResponse<PageData<T>> = {
-    code: 200,
-    message,
-    data: pageData,
-    timestamp: Date.now()
-  };
-  ctx.body = response;
-};
+  success(ctx, pageData, message);
+}
 
 /**
- * 错误响应工具函数
- * @param ctx Koa上下文对象
- * @param code 错误码
- * @param message 错误消息
- * @param data 错误数据
+ * 响应状态码常量
  */
-export const error = <T = unknown>(
-  ctx: Context, 
-  code = 500, 
-  message = '服务器内部错误', 
-  data: T | null = null
-): void => {
-  const response: ApiResponse<T | null> = {
-    code,
-    message,
-    data,
-    timestamp: Date.now()
-  };
-  ctx.status = code < 1000 ? code : 500; // HTTP状态码
-  ctx.body = response;
-};
-
-/**
- * 参数错误响应
- * @param ctx Koa上下文对象
- * @param message 错误消息
- * @param data 错误数据
- */
-export const badRequest = <T = unknown>(
-  ctx: Context, 
-  message = '参数错误', 
-  data: T | null = null
-): void => {
-  error(ctx, 400, message, data);
-};
-
-/**
- * 未授权响应
- * @param ctx Koa上下文对象
- * @param message 错误消息
- */
-export const unauthorized = (ctx: Context, message = '未授权访问'): void => {
-  error(ctx, 401, message);
-};
-
-/**
- * 禁止访问响应
- * @param ctx Koa上下文对象
- * @param message 错误消息
- */
-export const forbidden = (ctx: Context, message = '禁止访问'): void => {
-  error(ctx, 403, message);
-};
-
-/**
- * 资源不存在响应
- * @param ctx Koa上下文对象
- * @param message 错误消息
- */
-export const notFound = (ctx: Context, message = '资源不存在'): void => {
-  error(ctx, 404, message);
-}; 
+export const HTTP_STATUS = {
+  OK: 200,                    // 成功
+  CREATED: 201,              // 创建成功
+  NO_CONTENT: 204,           // 无内容
+  BAD_REQUEST: 400,          // 请求错误
+  UNAUTHORIZED: 401,         // 未授权
+  FORBIDDEN: 403,            // 禁止访问
+  NOT_FOUND: 404,            // 未找到
+  METHOD_NOT_ALLOWED: 405,   // 方法不允许
+  CONFLICT: 409,             // 冲突
+  UNPROCESSABLE_ENTITY: 422, // 无法处理的实体
+  INTERNAL_SERVER_ERROR: 500, // 服务器内部错误
+  BAD_GATEWAY: 502,          // 网关错误
+  SERVICE_UNAVAILABLE: 503   // 服务不可用
+} as const; 

@@ -1,14 +1,15 @@
 import Koa from 'koa';
 import bodyParser from 'koa-bodyparser';
 import cors from '@koa/cors';
-import { prisma, connectDatabase, disconnectDatabase } from './config/database.js';
-import { success, error } from './utils/response.js';
-import { logger } from './utils/logger.js';
+import { prisma, initDatabase, closeDatabase } from './config/database.ts';
+import { success, error } from './utils/response.ts';
+import { logger } from './utils/logger.ts';
 import { 
   IHealthCheckData, 
   IDatabaseTestData, 
   IErrorData 
-} from './types/common.js';
+} from './types/common.ts';
+import mainRouter from './routes/index.ts';
 
 /**
  * 创建Koa应用实例
@@ -67,7 +68,7 @@ const databaseTestHandler = async (ctx: Koa.Context, next: Koa.Next): Promise<vo
       const errorData: IErrorData = {
         error: errorMessage
       };
-      error(ctx, 500, '数据库连接失败', errorData);
+      error(ctx, '数据库连接失败', 500, errorData);
     }
     return;
   }
@@ -78,7 +79,7 @@ const databaseTestHandler = async (ctx: Koa.Context, next: Koa.Next): Promise<vo
  * 404处理中间件
  */
 const notFoundHandler = async (ctx: Koa.Context): Promise<void> => {
-  error(ctx, 404, '接口不存在', null);
+  error(ctx, '接口不存在', 404, null);
 };
 
 /**
@@ -88,6 +89,36 @@ const setupRoutes = (): void => {
   app.use(healthCheckHandler);
   app.use(databaseTestHandler);
   app.use(notFoundHandler);
+};
+
+/**
+ * 应用初始化
+ */
+const initializeApp = async (): Promise<void> => {
+  try {
+    // 1. 先连接数据库
+    await initDatabase();
+    
+    // 2. 先配置基础中间件（包括bodyParser）
+    setupMiddleware();
+    
+    // 3. 注册主路由（这样路由就能使用bodyParser解析的数据）
+    app.use(mainRouter.routes());
+    app.use(mainRouter.allowedMethods());
+    
+    // 4. 设置其他路由（健康检查等）
+    setupRoutes();
+    
+    // 5. 启动服务器
+    startServer();
+    
+    // 6. 设置优雅关闭
+    setupGracefulShutdown();
+    
+  } catch (err) {
+    logger.error('应用初始化失败', err);
+    process.exit(1);
+  }
 };
 
 /**
@@ -108,37 +139,17 @@ const startServer = (): void => {
  * 优雅关闭处理
  */
 const setupGracefulShutdown = (): void => {
-  process.on('SIGINT', async () => {
-    logger.info('正在关闭服务器...');
-    await disconnectDatabase();
+  process.on('SIGTERM', async () => {
+    console.log('收到 SIGTERM 信号，开始优雅关闭...');
+    await closeDatabase();
     process.exit(0);
   });
-};
 
-/**
- * 应用初始化
- */
-const initializeApp = async (): Promise<void> => {
-  try {
-    // 连接数据库
-    await connectDatabase();
-    
-    // 配置中间件
-    setupMiddleware();
-    
-    // 设置路由
-    setupRoutes();
-    
-    // 启动服务器
-    startServer();
-    
-    // 设置优雅关闭
-    setupGracefulShutdown();
-    
-  } catch (err) {
-    logger.error('应用初始化失败', err);
-    process.exit(1);
-  }
+  process.on('SIGINT', async () => {
+    console.log('收到 SIGINT 信号，开始优雅关闭...');
+    await closeDatabase();
+    process.exit(0);
+  });
 };
 
 // 启动应用

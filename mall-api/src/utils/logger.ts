@@ -1,11 +1,18 @@
 /**
+ * 日志工具
+ * 提供统一的日志记录功能，支持不同级别的日志输出
+ * @author AI Assistant
+ * @since 1.0.0
+ */
+
+/**
  * 日志级别枚举
  */
-enum LogLevel {
-  INFO = 'INFO',
-  ERROR = 'ERROR',
-  WARN = 'WARN',
-  DEBUG = 'DEBUG'
+export enum LogLevel {
+  ERROR = 'error',
+  WARN = 'warn',
+  INFO = 'info',
+  DEBUG = 'debug'
 }
 
 /**
@@ -13,55 +20,55 @@ enum LogLevel {
  */
 class Logger {
   /**
-   * 格式化日志消息
+   * 格式化日志输出
    * @param level 日志级别
    * @param message 日志消息
-   * @param extra 额外信息
-   * @returns 格式化后的日志字符串
+   * @param data 附加数据
    */
-  private formatMessage(level: LogLevel, message: string, extra?: unknown): string {
+  private formatLog(level: LogLevel, message: string, data?: unknown): string {
     const timestamp = new Date().toISOString();
-    const extraStr = extra ? ` | ${JSON.stringify(extra)}` : '';
-    return `[${timestamp}] [${level}] ${message}${extraStr}`;
+    const logData = data ? ` ${JSON.stringify(data)}` : '';
+    return `[${timestamp}] [${level.toUpperCase()}] ${message}${logData}`;
   }
 
   /**
-   * 输出信息日志
-   * @param message 日志消息
-   * @param extra 额外信息
+   * 错误日志
+   * @param message 错误消息
+   * @param error 错误对象或数据
    */
-  info(message: string, extra?: unknown): void {
-    console.log(this.formatMessage(LogLevel.INFO, message, extra));
+  error(message: string, error?: unknown): void {
+    console.error(this.formatLog(LogLevel.ERROR, message, error));
   }
 
   /**
-   * 输出错误日志
-   * @param message 日志消息
-   * @param extra 额外信息
+   * 警告日志
+   * @param message 警告消息
+   * @param data 附加数据
    */
-  error(message: string, extra?: unknown): void {
-    console.error(this.formatMessage(LogLevel.ERROR, message, extra));
+  warn(message: string, data?: unknown): void {
+    console.warn(this.formatLog(LogLevel.WARN, message, data));
   }
 
   /**
-   * 输出警告日志
-   * @param message 日志消息
-   * @param extra 额外信息
+   * 信息日志
+   * @param message 信息消息
+   * @param data 附加数据
    */
-  warn(message: string, extra?: unknown): void {
-    console.warn(this.formatMessage(LogLevel.WARN, message, extra));
+  info(message: string, data?: unknown): void {
+    console.log(this.formatLog(LogLevel.INFO, message, data));
   }
 
   /**
-   * 输出调试日志（仅开发环境）
-   * @param message 日志消息
-   * @param extra 额外信息
+   * 调试日志
+   * @param message 调试消息
+   * @param data 附加数据
    */
-  debug(message: string, extra?: unknown): void {
+  debug(message: string, data?: unknown): void {
     if (process.env.NODE_ENV === 'development') {
-      console.debug(this.formatMessage(LogLevel.DEBUG, message, extra));
+      console.log(this.formatLog(LogLevel.DEBUG, message, data));
     }
   }
 }
 
+// 导出日志工具实例
 export const logger = new Logger(); 

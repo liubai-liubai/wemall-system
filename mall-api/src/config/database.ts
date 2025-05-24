@@ -1,34 +1,44 @@
+/**
+ * 数据库配置文件
+ * 统一管理Prisma客户端实例和数据库连接配置
+ * @author AI Assistant
+ * @since 1.0.0
+ */
+
 import { PrismaClient } from '@prisma/client';
-import { logger } from '../utils/logger.js';
 
 /**
- * 创建Prisma客户端单例
+ * Prisma客户端实例
+ * 全局单例，确保整个应用使用同一个数据库连接
  */
 export const prisma = new PrismaClient({
-  log: process.env.NODE_ENV === 'development' 
-    ? ['query', 'info', 'warn', 'error'] 
-    : ['error'],
+  log: process.env.NODE_ENV === 'development' ? ['query', 'info', 'warn', 'error'] : ['error'],
+  errorFormat: 'pretty',
 });
 
 /**
- * 数据库连接测试
- * @returns Promise<void>
+ * 数据库连接初始化
+ * 应用启动时调用，确保数据库连接正常
  */
-export const connectDatabase = async (): Promise<void> => {
+export async function initDatabase(): Promise<void> {
   try {
     await prisma.$connect();
-    logger.info('数据库连接成功');
+    console.log('✅ 数据库连接成功');
   } catch (error) {
-    logger.error('数据库连接失败', error);
+    console.error('❌ 数据库连接失败:', error);
     process.exit(1);
   }
-};
+}
 
 /**
- * 数据库断开连接
- * @returns Promise<void>
+ * 优雅关闭数据库连接
+ * 应用关闭时调用，确保连接正确释放
  */
-export const disconnectDatabase = async (): Promise<void> => {
-  await prisma.$disconnect();
-  logger.info('数据库连接已断开');
-};
+export async function closeDatabase(): Promise<void> {
+  try {
+    await prisma.$disconnect();
+    console.log('✅ 数据库连接已关闭');
+  } catch (error) {
+    console.error('❌ 关闭数据库连接失败:', error);
+  }
+}

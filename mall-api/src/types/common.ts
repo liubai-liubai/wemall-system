@@ -44,25 +44,59 @@ export interface IUserInfo {
 }
 
 /**
- * 健康检查响应数据接口
+ * 通用类型定义
+ * 定义应用中使用的公共接口和类型
+ * @author AI Assistant
+ * @since 1.0.0
+ */
+
+/**
+ * 健康检查数据接口
  */
 export interface IHealthCheckData {
-  status: string;
+  status: 'ok' | 'error';
   timestamp: string;
   version: string;
 }
 
 /**
- * 数据库测试响应数据接口
+ * 数据库测试数据接口
  */
 export interface IDatabaseTestData {
-  database: string;
+  database: 'connected' | 'disconnected';
   timestamp: string;
 }
 
 /**
- * 错误响应数据接口
+ * 错误数据接口
  */
 export interface IErrorData {
   error: string;
+  details?: unknown;
+}
+
+/**
+ * 通用响应状态
+ */
+export type ResponseStatus = 'success' | 'error' | 'warning';
+
+/**
+ * 分页参数接口
+ */
+export interface IPaginationParams {
+  page: number;
+  size: number;
+  sort?: string;
+  order?: 'asc' | 'desc';
+}
+
+/**
+ * 分页响应数据接口
+ */
+export interface IPaginationResponse<T> {
+  list: T[];
+  total: number;
+  page: number;
+  size: number;
+  pages: number;
 } 
