@@ -1,15 +1,10 @@
 {
-  "name": "wechat-mall-system",
+  "name": "wemall-system",
   "version": "1.0.0",
   "description": "微信小程序商城系统 - 完整的电商解决方案",
   "author": "Your Name <your-email@example.com>",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "private": true,
-  "workspaces": [
-    "mall-api",
-    "mall-admin",
-    "mall-miniprogram"
-  ],
   "scripts": {
     "dev": "concurrently \"npm run dev:api\" \"npm run dev:admin\" \"npm run dev:miniprogram\"",
     "dev:api": "cd mall-api && npm run dev",
@@ -19,18 +14,13 @@
     "build:api": "cd mall-api && npm run build",
     "build:admin": "cd mall-admin && npm run build",
     "build:miniprogram": "cd mall-miniprogram && npm run build:mp-weixin",
-    "deploy": "npm run deploy:api && npm run deploy:admin",
-    "deploy:api": "cd mall-api && npm run deploy",
-    "deploy:admin": "cd mall-admin && npm run deploy",
+    "install:all": "npm run install:api && npm run install:admin && npm run install:miniprogram",
+    "install:api": "cd mall-api && npm install",
+    "install:admin": "cd mall-admin && npm install",
+    "install:miniprogram": "cd mall-miniprogram && npm install",
     "test": "npm run test:api && npm run test:admin",
     "test:api": "cd mall-api && npm run test",
     "test:admin": "cd mall-admin && npm run test",
-    "test:unit": "npm run test:unit:api && npm run test:unit:admin",
-    "test:unit:api": "cd mall-api && npm run test:unit",
-    "test:unit:admin": "cd mall-admin && npm run test:unit",
-    "test:coverage": "npm run test:coverage:api && npm run test:coverage:admin",
-    "test:coverage:api": "cd mall-api && npm run test:coverage",
-    "test:coverage:admin": "cd mall-admin && npm run test:coverage",
     "lint": "npm run lint:api && npm run lint:admin && npm run lint:miniprogram",
     "lint:api": "cd mall-api && npm run lint",
     "lint:admin": "cd mall-admin && npm run lint",
@@ -39,19 +29,16 @@
     "lint:fix:api": "cd mall-api && npm run lint:fix",
     "lint:fix:admin": "cd mall-admin && npm run lint:fix",
     "lint:fix:miniprogram": "cd mall-miniprogram && npm run lint:fix",
-    "type-check": "tsc --noEmit",
+    "type-check": "npm run type-check:api && npm run type-check:admin && npm run type-check:miniprogram",
     "type-check:api": "cd mall-api && npm run type-check",
     "type-check:admin": "cd mall-admin && npm run type-check",
     "type-check:miniprogram": "cd mall-miniprogram && npm run type-check",
     "prettier:check": "prettier --check .",
     "prettier:fix": "prettier --write .",
-    "commitlint": "commitlint --edit",
-    "prepare": "husky install",
     "clean": "rimraf **/node_modules **/dist **/.next",
-    "setup": "npm install && npm run setup:api && npm run setup:admin && npm run setup:miniprogram",
-    "setup:api": "cd mall-api && npm install",
-    "setup:admin": "cd mall-admin && npm install",
-    "setup:miniprogram": "cd mall-miniprogram && npm install",
+    "clean:api": "cd mall-api && rimraf node_modules dist",
+    "clean:admin": "cd mall-admin && rimraf node_modules dist .next",
+    "clean:miniprogram": "cd mall-miniprogram && rimraf node_modules dist",
     "db:migrate": "cd mall-api && npx prisma migrate dev",
     "db:seed": "cd mall-api && npx prisma db seed",
     "db:reset": "cd mall-api && npx prisma migrate reset",
@@ -63,12 +50,8 @@
     "rimraf": "^5.0.5",
     "@commitlint/cli": "^18.4.3",
     "@commitlint/config-conventional": "^18.4.3",
-    "@typescript-eslint/eslint-plugin": "^6.14.0",
-    "@typescript-eslint/parser": "^6.14.0",
     "eslint": "^8.55.0",
-    "eslint-plugin-vue": "^9.19.2",
     "prettier": "^3.1.1",
-    "typescript": "^5.3.3",
     "husky": "^8.0.3",
     "lint-staged": "^15.2.0"
   },
@@ -88,12 +71,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-username/wechat-mall-system.git"
+    "url": "https://github.com/your-username/wemall-system.git"
   },
   "bugs": {
-    "url": "https://github.com/your-username/wechat-mall-system/issues"
+    "url": "https://github.com/your-username/wemall-system/issues"
   },
-  "homepage": "https://github.com/your-username/wechat-mall-system#readme",
+  "homepage": "https://github.com/your-username/wemall-system#readme",
   "commitlint": {
     "extends": [
       "@commitlint/config-conventional"
@@ -106,11 +89,5 @@
     "*.{js,ts,vue,css,scss,md}": [
       "prettier --write"
     ]
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged",
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
-    }
   }
-}
+} 

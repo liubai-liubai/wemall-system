@@ -44,26 +44,55 @@ wemall-system/
 - Redis 6.x+ (可选)
 - 微信开发者工具
 
-### ⚡ 一键启动
+### ⚡ 安装和启动
 
 ```bash
 # 1. 克隆项目
 git clone https://github.com/your-username/wemall-system.git
 cd wemall-system
 
-# 2. 安装依赖
-npm install
-npm run setup
+# 2. 安装所有项目依赖
+npm run install:all
 
-# 3. 配置环境变量
+# 3. 配置后端环境变量
 cp mall-api/.env.example mall-api/.env
 # 编辑 mall-api/.env 填入数据库配置
 
 # 4. 初始化数据库
+npm run db:generate
 npm run db:migrate
 
 # 5. 启动所有服务
 npm run dev
+```
+
+### 🔧 单独操作
+
+```bash
+# 只启动后端API
+npm run dev:api
+
+# 只启动管理后台
+npm run dev:admin  
+
+# 只启动小程序
+npm run dev:miniprogram
+
+# 单独安装依赖
+npm run install:api
+npm run install:admin
+npm run install:miniprogram
+
+# 单独构建
+npm run build:api
+npm run build:admin
+npm run build:miniprogram
+
+# 清理项目
+npm run clean              # 清理所有项目
+npm run clean:api          # 清理后端API
+npm run clean:admin        # 清理管理后台
+npm run clean:miniprogram  # 清理小程序
 ```
 
 ### 🌐 访问地址
