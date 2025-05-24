@@ -1,0 +1,48 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 开始执行代码提交前检查..."
+
+# 1. 执行代码格式化检查
+echo "📝 执行Prettier格式化检查..."
+npm run prettier:check
+if [ $? -ne 0 ]; then
+  echo "❌ Prettier格式化检查失败，请运行 npm run prettier:fix 修复格式问题"
+  exit 1
+fi
+
+# 2. 执行ESLint检查
+echo "🔧 执行ESLint代码质量检查..."
+npm run lint
+if [ $? -ne 0 ]; then
+  echo "❌ ESLint检查失败，请修复代码质量问题"
+  exit 1
+fi
+
+# 3. 执行TypeScript类型检查
+echo "🔍 执行TypeScript类型检查..."
+npm run type-check
+if [ $? -ne 0 ]; then
+  echo "❌ TypeScript类型检查失败，请修复类型错误"
+  exit 1
+fi
+
+# 4. 执行单元测试
+echo "🧪 执行单元测试..."
+npm run test:unit
+if [ $? -ne 0 ]; then
+  echo "❌ 单元测试失败，请修复测试问题"
+  exit 1
+fi
+
+# 5. 检查commit信息格式
+echo "📋 检查commit信息格式..."
+npm run commitlint
+if [ $? -ne 0 ]; then
+  echo "❌ commit信息格式不正确，请遵循约定式提交规范"
+  echo "格式: type(scope): description"
+  echo "例如: feat(user): 添加用户登录功能"
+  exit 1
+fi
+
+echo "✅ 所有检查通过，允许提交代码" 

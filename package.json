@@ -1,0 +1,110 @@
+{
+  "name": "wechat-mall-system",
+  "version": "1.0.0",
+  "description": "微信小程序商城系统 - 完整的电商解决方案",
+  "author": "Your Name <your-email@example.com>",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "mall-api",
+    "mall-admin", 
+    "mall-miniprogram"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:admin\" \"npm run dev:miniprogram\"",
+    "dev:api": "cd mall-api && npm run dev",
+    "dev:admin": "cd mall-admin && npm run dev",
+    "dev:miniprogram": "cd mall-miniprogram && npm run dev:mp-weixin",
+    "build": "npm run build:api && npm run build:admin && npm run build:miniprogram",
+    "build:api": "cd mall-api && npm run build",
+    "build:admin": "cd mall-admin && npm run build",
+    "build:miniprogram": "cd mall-miniprogram && npm run build:mp-weixin",
+    "deploy": "npm run deploy:api && npm run deploy:admin",
+    "deploy:api": "cd mall-api && npm run deploy",
+    "deploy:admin": "cd mall-admin && npm run deploy",
+    "test": "npm run test:api && npm run test:admin",
+    "test:api": "cd mall-api && npm run test",
+    "test:admin": "cd mall-admin && npm run test",
+    "test:unit": "npm run test:unit:api && npm run test:unit:admin",
+    "test:unit:api": "cd mall-api && npm run test:unit",
+    "test:unit:admin": "cd mall-admin && npm run test:unit",
+    "test:coverage": "npm run test:coverage:api && npm run test:coverage:admin",
+    "test:coverage:api": "cd mall-api && npm run test:coverage",
+    "test:coverage:admin": "cd mall-admin && npm run test:coverage",
+    "lint": "npm run lint:api && npm run lint:admin && npm run lint:miniprogram",
+    "lint:api": "cd mall-api && npm run lint",
+    "lint:admin": "cd mall-admin && npm run lint", 
+    "lint:miniprogram": "cd mall-miniprogram && npm run lint",
+    "lint:fix": "npm run lint:fix:api && npm run lint:fix:admin && npm run lint:fix:miniprogram",
+    "lint:fix:api": "cd mall-api && npm run lint:fix",
+    "lint:fix:admin": "cd mall-admin && npm run lint:fix",
+    "lint:fix:miniprogram": "cd mall-miniprogram && npm run lint:fix",
+    "type-check": "tsc --noEmit",
+    "type-check:api": "cd mall-api && npm run type-check",
+    "type-check:admin": "cd mall-admin && npm run type-check",
+    "type-check:miniprogram": "cd mall-miniprogram && npm run type-check",
+    "prettier:check": "prettier --check .",
+    "prettier:fix": "prettier --write .",
+    "commitlint": "commitlint --edit",
+    "prepare": "husky install",
+    "clean": "rimraf **/node_modules **/dist **/.next",
+    "setup": "npm install && npm run setup:api && npm run setup:admin && npm run setup:miniprogram",
+    "setup:api": "cd mall-api && npm install",
+    "setup:admin": "cd mall-admin && npm install",
+    "setup:miniprogram": "cd mall-miniprogram && npm install",
+    "db:migrate": "cd mall-api && npx prisma migrate dev",
+    "db:seed": "cd mall-api && npx prisma db seed",
+    "db:reset": "cd mall-api && npx prisma migrate reset",
+    "db:generate": "cd mall-api && npx prisma generate",
+    "db:studio": "cd mall-api && npx prisma studio"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "rimraf": "^5.0.5",
+    "@commitlint/cli": "^18.4.3",
+    "@commitlint/config-conventional": "^18.4.3",
+    "@typescript-eslint/eslint-plugin": "^6.14.0",
+    "@typescript-eslint/parser": "^6.14.0",
+    "eslint": "^8.55.0",
+    "eslint-plugin-vue": "^9.19.2",
+    "prettier": "^3.1.1",
+    "typescript": "^5.3.3",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "keywords": [
+    "微信小程序",
+    "商城系统", 
+    "电商",
+    "uni-app",
+    "vue3",
+    "typescript",
+    "云函数",
+    "腾讯云"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/wechat-mall-system.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/wechat-mall-system/issues"
+  },
+  "homepage": "https://github.com/your-username/wechat-mall-system#readme",
+  "commitlint": {
+    "extends": ["@commitlint/config-conventional"]
+  },
+  "lint-staged": {
+    "*.{js,ts,vue}": ["eslint --fix"],
+    "*.{js,ts,vue,css,scss,md}": ["prettier --write"]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  }
+} 
