@@ -1,109 +1,144 @@
 /**
- * 统一响应格式工具
- * 提供标准化的API响应格式，确保所有接口返回格式一致
- * @author AI Assistant
+ * 响应格式化工具
+ * 提供统一的API响应格式，确保前端获得一致的数据结构
+ * @author 刘白 & AI Assistant
  * @since 1.0.0
  */
 
-import { Context } from 'koa';
-
-/**
- * API响应基础接口
- */
-interface ApiResponse<T = unknown> {
-  code: number;        // 状态码
-  message: string;     // 消息
-  data: T;            // 数据
-  timestamp: number;   // 时间戳
-}
-
-/**
- * 分页响应数据接口
- */
-interface PageData<T> {
-  list: T[];          // 数据列表
-  total: number;      // 总数
-  page: number;       // 当前页
-  size: number;       // 页大小
-  pages: number;      // 总页数
-}
+import { ApiResponse, PageResponse } from '../types/common.js';
 
 /**
  * 成功响应
- * @param ctx Koa上下文
  * @param data 响应数据
  * @param message 响应消息
- * @param code HTTP状态码
+ * @param code 响应状态码
+ * @returns 格式化的成功响应
  */
-export function success<T>(
-  ctx: Context,
-  data: T,
-  message: string = '操作成功',
-  code: number = 200
-): void {
-  const response: ApiResponse<T> = {
+export function success<T = any>(
+  data: T = null as any, 
+  message = '操作成功', 
+  code = 200
+): ApiResponse<T> {
+  return {
     code,
     message,
     data,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   };
-  
-  ctx.status = code;
-  ctx.body = response;
 }
 
 /**
  * 错误响应
- * @param ctx Koa上下文
  * @param message 错误消息
- * @param code HTTP状态码
- * @param data 错误详情数据
+ * @param code 错误状态码
+ * @param data 错误数据
+ * @returns 格式化的错误响应
  */
-export function error<T = null>(
-  ctx: Context,
-  message: string,
-  code: number = 500,
-  data: T = null as T
-): void {
-  const response: ApiResponse<T> = {
+export function error<T = any>(
+  message = '操作失败', 
+  code = 500, 
+  data: T = null as any
+): ApiResponse<T> {
+  return {
     code,
     message,
     data,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   };
-  
-  ctx.status = code;
-  ctx.body = response;
 }
 
 /**
  * 分页响应
- * @param ctx Koa上下文
  * @param list 数据列表
  * @param total 总数
  * @param page 当前页
  * @param size 页大小
  * @param message 响应消息
+ * @param code 响应状态码
+ * @returns 格式化的分页响应
  */
-export function paginate<T>(
-  ctx: Context,
+export function pageSuccess<T = any>(
   list: T[],
   total: number,
   page: number,
   size: number,
-  message: string = '获取成功'
-): void {
+  message = '获取成功',
+  code = 200
+): PageResponse<T> {
   const pages = Math.ceil(total / size);
   
-  const pageData: PageData<T> = {
+  return {
+    code,
+    message,
+    data: {
     list,
     total,
     page,
     size,
-    pages
+      pages,
+    },
+    timestamp: Date.now(),
   };
-  
-  success(ctx, pageData, message);
+}
+
+/**
+ * 验证错误响应
+ * @param errors 验证错误详情
+ * @param message 错误消息
+ * @returns 格式化的验证错误响应
+ */
+export function validationError(
+  errors: Record<string, string[]>,
+  message = '参数验证失败'
+): ApiResponse<Record<string, string[]>> {
+  return {
+    code: 400,
+    message,
+    data: errors,
+    timestamp: Date.now(),
+  };
+}
+
+/**
+ * 认证错误响应
+ * @param message 错误消息
+ * @returns 格式化的认证错误响应
+ */
+export function authError(message = '认证失败'): ApiResponse<null> {
+  return {
+    code: 401,
+    message,
+    data: null,
+    timestamp: Date.now(),
+  };
+}
+
+/**
+ * 权限错误响应
+ * @param message 错误消息
+ * @returns 格式化的权限错误响应
+ */
+export function permissionError(message = '权限不足'): ApiResponse<null> {
+  return {
+    code: 403,
+    message,
+    data: null,
+    timestamp: Date.now(),
+  };
+}
+
+/**
+ * 资源不存在错误响应
+ * @param message 错误消息
+ * @returns 格式化的404错误响应
+ */
+export function notFoundError(message = '资源不存在'): ApiResponse<null> {
+  return {
+    code: 404,
+    message,
+    data: null,
+    timestamp: Date.now(),
+  };
 }
 
 /**

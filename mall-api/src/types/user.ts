@@ -1,7 +1,7 @@
 /**
  * 用户相关类型定义
  * 定义用户模块使用的接口和类型，确保类型安全
- * @author AI Assistant
+ * @author 刘白 & AI Assistant
  * @since 1.0.0
  */
 

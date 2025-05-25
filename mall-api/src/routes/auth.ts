@@ -1,14 +1,15 @@
 /**
  * 认证路由
  * 定义用户认证相关的API端点，包括登录、注册、令牌管理等
- * @author AI Assistant
+ * @author 刘白 & AI Assistant
  * @since 1.0.0
  */
 
 import Router from '@koa/router';
-import { authController } from '../controllers/auth-controller.ts';
-// import { authValidator } from '../validators/auth.ts';  // 后续添加
-// import { authMiddleware } from '../middleware/auth.ts'; // 后续添加
+import { authController } from '../controllers/auth-controller.js';
+import { adminUserController } from '../controllers/admin-user-controller.js';
+// import { authValidator } from '../validators/auth.js';  // 后续添加
+// import { authMiddleware } from '../middleware/auth.js'; // 后续添加
 
 // 创建认证路由实例
 const router = new Router();
@@ -20,6 +21,14 @@ const router = new Router();
  * @returns {user: object, token: string, refreshToken: string}
  */
 router.post('/wechat-login', authController.wechatLogin);
+
+/**
+ * POST /auth/admin/login
+ * 管理员登录
+ * @body {username: string, password: string}
+ * @returns {token: string, refreshToken: string, userInfo: object, permissions: string[], menus: array}
+ */
+router.post('/admin/login', adminUserController.adminLogin);
 
 /**
  * POST /auth/refresh-token  

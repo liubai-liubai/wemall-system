@@ -1,16 +1,16 @@
 import Koa from 'koa';
 import bodyParser from 'koa-bodyparser';
 import cors from '@koa/cors';
-import { prisma, initDatabase, closeDatabase } from './config/database.ts';
-import { success, error } from './utils/response.ts';
-import { logger } from './utils/logger.ts';
+import { prisma, initDatabase, closeDatabase } from './config/database.js';
+import { success, error } from './utils/response.js';
+import { logger } from './utils/logger.js';
 import { 
   IHealthCheckData, 
   IDatabaseTestData, 
   IErrorData 
-} from './types/common.ts';
-import mainRouter from './routes/index.ts';
-import { swaggerUI, docsRedirect } from './middleware/swagger.ts';
+} from './types/common.js';
+import mainRouter from './routes/index.js';
+import { swaggerUI, docsRedirect } from './middleware/swagger.js';
 
 /**
  * 创建Koa应用实例
@@ -52,7 +52,7 @@ const healthCheckHandler = async (ctx: Koa.Context, next: Koa.Next): Promise<voi
       timestamp: new Date().toISOString(),
       version: '1.0.0'
     };
-    success(ctx, data, '服务运行正常');
+    ctx.body = success(data, '服务运行正常');
     return;
   }
   await next();
@@ -69,13 +69,13 @@ const databaseTestHandler = async (ctx: Koa.Context, next: Koa.Next): Promise<vo
         database: 'connected',
         timestamp: new Date().toISOString()
       };
-      success(ctx, data, '数据库连接成功');
+      ctx.body = success(data, '数据库连接成功');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '未知错误';
       const errorData: IErrorData = {
         error: errorMessage
       };
-      error(ctx, '数据库连接失败', 500, errorData);
+      ctx.body = error('数据库连接失败', 500);
     }
     return;
   }
@@ -86,7 +86,7 @@ const databaseTestHandler = async (ctx: Koa.Context, next: Koa.Next): Promise<vo
  * 404处理中间件
  */
 const notFoundHandler = async (ctx: Koa.Context): Promise<void> => {
-  error(ctx, '接口不存在', 404, null);
+  ctx.body = error('接口不存在', 404);
 };
 
 /**

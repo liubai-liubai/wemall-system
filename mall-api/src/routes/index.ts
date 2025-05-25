@@ -1,13 +1,17 @@
 /**
  * 路由主入口文件
  * 负责整合所有模块路由，统一管理API版本和前缀
- * @author AI Assistant
+ * @author 刘白 & AI Assistant
  * @since 1.0.0
  */
 
 import Router from '@koa/router';
-import healthRoutes from './health.ts';
-import authRoutes from './auth.ts';     // 新添加
+import healthRoutes from './health.js';
+import authRoutes from './auth.js';
+import permissionRoutes from './permissions.js';
+import roleRoutes from './roles.js';
+import departmentRoutes from './departments.js';
+import adminUserRoutes from './admin-users.js';
 
 // 创建主路由实例
 const router = new Router();
@@ -26,6 +30,14 @@ router.use(`${API_PREFIX}/health`, healthRoutes.routes(), healthRoutes.allowedMe
  * 处理用户登录、注册、令牌管理等认证相关功能
  */
 router.use(`${API_PREFIX}/auth`, authRoutes.routes(), authRoutes.allowedMethods());
+
+/**
+ * 注册系统管理模块路由
+ */
+router.use(`${API_PREFIX}/permissions`, permissionRoutes.routes(), permissionRoutes.allowedMethods());
+router.use(`${API_PREFIX}/roles`, roleRoutes.routes(), roleRoutes.allowedMethods());
+router.use(`${API_PREFIX}/departments`, departmentRoutes.routes(), departmentRoutes.allowedMethods());
+router.use(`${API_PREFIX}/admin-users`, adminUserRoutes.routes(), adminUserRoutes.allowedMethods());
 
 // TODO: 后续添加其他模块路由
 // router.use(`${API_PREFIX}/users`, userRoutes.routes(), userRoutes.allowedMethods());

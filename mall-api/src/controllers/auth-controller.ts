@@ -1,15 +1,15 @@
 /**
  * 认证控制器
  * 处理用户认证相关的HTTP请求，调用认证服务处理业务逻辑
- * @author AI Assistant
+ * @author 刘白 & AI Assistant
  * @since 1.0.0
  */
 
 import { Context } from 'koa';
-import { authService } from '../services/auth-service.ts';
-import { success, error, HTTP_STATUS } from '../utils/response.ts';
-import { logger } from '../utils/logger.ts';
-import { IWechatLoginRequest } from '../types/user.ts';
+import { authService } from '../services/auth-service.js';
+import { success, error, HTTP_STATUS } from '../utils/response.js';
+import { logger } from '../utils/logger.js';
+import { IWechatLoginRequest } from '../types/user.js';
 
 /**
  * 认证控制器类
@@ -84,7 +84,7 @@ class AuthController {
     try {
       // 1. 检查请求体是否存在
       if (!ctx.request.body) {
-        error(ctx, '请求体不能为空', HTTP_STATUS.BAD_REQUEST);
+        ctx.body = error('请求体不能为空', HTTP_STATUS.BAD_REQUEST);
         return;
       }
 
@@ -93,12 +93,12 @@ class AuthController {
       
       // 3. 详细的参数验证
       if (!loginData || typeof loginData !== 'object') {
-        error(ctx, '请求参数格式错误', HTTP_STATUS.BAD_REQUEST);
+        ctx.body = error('请求参数格式错误', HTTP_STATUS.BAD_REQUEST);
         return;
       }
 
       if (!loginData.code || typeof loginData.code !== 'string') {
-        error(ctx, '微信登录凭证code不能为空', HTTP_STATUS.BAD_REQUEST);
+        ctx.body = error('微信登录凭证code不能为空', HTTP_STATUS.BAD_REQUEST);
         return;
       }
 
@@ -115,7 +115,7 @@ class AuthController {
       });
 
       // 7. 返回成功响应
-      success(ctx, loginResult, '登录成功', HTTP_STATUS.OK);
+      ctx.body = success(loginResult, '登录成功');
       
     } catch (err) {
       // 8. 详细的错误处理和日志记录
@@ -128,7 +128,7 @@ class AuthController {
         headers: ctx.headers
       });
       
-      error(ctx, errorMessage, HTTP_STATUS.INTERNAL_SERVER_ERROR);
+      ctx.body = error(errorMessage, HTTP_STATUS.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -183,7 +183,7 @@ class AuthController {
       const token = refreshToken || headerToken;
       
       if (!token) {
-        error(ctx, '刷新令牌不能为空', HTTP_STATUS.BAD_REQUEST);
+        ctx.body = error('刷新令牌不能为空', HTTP_STATUS.BAD_REQUEST);
         return;
       }
 
@@ -191,14 +191,14 @@ class AuthController {
       const result = await authService.refreshAccessToken(token);
 
       // 3. 返回新的访问令牌
-      success(ctx, result, '令牌刷新成功', HTTP_STATUS.OK);
+      ctx.body = success(result, '令牌刷新成功');
       
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '令牌刷新失败';
       logger.error('令牌刷新失败', err);
       
       // 令牌相关错误返回401未授权
-      error(ctx, errorMessage, HTTP_STATUS.UNAUTHORIZED);
+      ctx.body = error(errorMessage, HTTP_STATUS.UNAUTHORIZED);
     }
   }
 
@@ -236,7 +236,7 @@ class AuthController {
       const userId = (ctx.state.user as any)?.userId;
       
       if (!userId) {
-        error(ctx, '用户未登录', HTTP_STATUS.UNAUTHORIZED);
+        ctx.body = error('用户未登录', HTTP_STATUS.UNAUTHORIZED);
         return;
       }
 
@@ -247,11 +247,11 @@ class AuthController {
       logger.info('用户登出', { userId });
 
       // 4. 返回成功响应
-      success(ctx, null, '登出成功', HTTP_STATUS.OK);
+      ctx.body = success(null, '登出成功');
       
     } catch (err) {
       logger.error('用户登出失败', err);
-      error(ctx, '登出失败', HTTP_STATUS.INTERNAL_SERVER_ERROR);
+      ctx.body = error('登出失败', HTTP_STATUS.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -289,19 +289,19 @@ class AuthController {
       const user = ctx.state.user;
       
       if (!user) {
-        error(ctx, '用户未登录', HTTP_STATUS.UNAUTHORIZED);
+        ctx.body = error('用户未登录', HTTP_STATUS.UNAUTHORIZED);
         return;
       }
 
       // 2. 返回用户信息（敏感信息已在service层过滤）
-      success(ctx, user, '获取用户信息成功', HTTP_STATUS.OK);
+      ctx.body = success(user, '获取用户信息成功');
       
     } catch (err) {
       logger.error('获取用户信息失败', err);
-      error(ctx, '获取用户信息失败', HTTP_STATUS.INTERNAL_SERVER_ERROR);
+      ctx.body = error('获取用户信息失败', HTTP_STATUS.INTERNAL_SERVER_ERROR);
     }
   }
 }
 
 // 导出控制器实例
-export const authController = new AuthController();
+export const authController = new AuthController(); 

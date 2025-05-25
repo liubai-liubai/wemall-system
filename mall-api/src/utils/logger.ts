@@ -1,7 +1,7 @@
 /**
  * 日志工具
  * 提供统一的日志记录功能，支持不同级别的日志输出
- * @author AI Assistant
+ * @author 刘白 & AI Assistant
  * @since 1.0.0
  */
 

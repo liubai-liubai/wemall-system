@@ -1,5 +1,7 @@
 /**
  * API统一响应格式接口
+ * @author 刘白 & AI Assistant
+ * @since 1.0.0
  */
 export interface ApiResponse<T = unknown> {
   code: number;
@@ -46,7 +48,7 @@ export interface IUserInfo {
 /**
  * 通用类型定义
  * 定义应用中使用的公共接口和类型
- * @author AI Assistant
+ * @author 刘白 & AI Assistant
  * @since 1.0.0
  */
 

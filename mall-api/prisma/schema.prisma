@@ -7,6 +7,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ================================
+// 用户模块 - 现有代码保持不变
+// ================================
+
 // 用户表 - 遵循规范：复数形式，小写下划线命名
 model User {
   id          String   @id @default(uuid()) @map("id")          // 规范：使用UUID主键
@@ -51,4 +55,287 @@ model RefreshToken {
   @@index([user_id], map: "idx_refresh_tokens_user_id")
   @@index([expires_at], map: "idx_refresh_tokens_expires_at")
   @@map("refresh_tokens")
+}
+
+// ================================
+// 系统管理模块 - 严格遵循规范
+// ================================
+
+// 管理员用户表 (admin_users) 
+// 规范要求：
+// - 表名：复数形式，小写下划线命名
+// - 字段名：小写下划线命名  
+// - 主键：varchar(36) UUID
+// - 时间字段：created_at, updated_at
+// - 索引：uk_前缀(唯一)，idx_前缀(普通)，fk_前缀(外键)
+model AdminUser {
+  id               String    @id @default(uuid()) @map("id") @db.VarChar(36)
+  username         String    @unique @map("username") @db.VarChar(50)
+  password         String    @map("password") @db.VarChar(255)
+  email            String?   @unique @map("email") @db.VarChar(100)
+  phone            String?   @map("phone") @db.VarChar(20)
+  avatar           String?   @map("avatar") @db.VarChar(255)
+  real_name        String?   @map("real_name") @db.VarChar(50)
+  department_id    String?   @map("department_id") @db.VarChar(36)
+  status           Int       @default(1) @map("status") @db.TinyInt    // 1:启用 0:禁用
+  last_login_time  DateTime? @map("last_login_time") @db.Timestamp(0)
+  last_login_ip    String?   @map("last_login_ip") @db.VarChar(45)
+  created_at       DateTime  @default(now()) @map("created_at") @db.Timestamp(0)
+  updated_at       DateTime  @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  // 关联关系
+  department       Department?       @relation(fields: [department_id], references: [id])
+  admin_user_roles AdminUserRole[]
+  operation_logs   OperationLog[]
+
+  @@unique([username], map: "uk_admin_users_username")
+  @@unique([email], map: "uk_admin_users_email")
+  @@index([department_id], map: "idx_admin_users_department_id")
+  @@index([status], map: "idx_admin_users_status")
+  @@map("admin_users")
+}
+
+// 角色表 (roles)
+// 存储系统角色信息，支持RBAC权限模型
+model Role {
+  id               String            @id @default(uuid()) @map("id") @db.VarChar(36)
+  name             String            @map("name") @db.VarChar(50)
+  code             String            @unique @map("code") @db.VarChar(50)
+  description      String?           @map("description") @db.VarChar(255)
+  status           Int               @default(1) @map("status") @db.TinyInt    // 1:启用 0:禁用
+  sort             Int               @default(0) @map("sort")
+  created_at       DateTime          @default(now()) @map("created_at") @db.Timestamp(0)
+  updated_at       DateTime          @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  // 关联关系
+  admin_user_roles AdminUserRole[]
+  role_permissions RolePermission[]
+
+  @@unique([code], map: "uk_roles_code")
+  @@index([status], map: "idx_roles_status")
+  @@map("roles")
+}
+
+// 权限表 (permissions)
+// 存储系统权限信息，支持菜单、按钮、API三种权限类型
+model Permission {
+  id               String            @id @default(uuid()) @map("id") @db.VarChar(36)
+  name             String            @map("name") @db.VarChar(50)
+  code             String            @unique @map("code") @db.VarChar(100)
+  type             String            @map("type") @db.VarChar(20)       // menu:菜单 button:按钮 api:接口
+  parent_id        String?           @map("parent_id") @db.VarChar(36)
+  path             String?           @map("path") @db.VarChar(255)
+  component        String?           @map("component") @db.VarChar(255)
+  icon             String?           @map("icon") @db.VarChar(100)
+  sort             Int               @default(0) @map("sort")
+  status           Int               @default(1) @map("status") @db.TinyInt    // 1:启用 0:禁用
+  created_at       DateTime          @default(now()) @map("created_at") @db.Timestamp(0)
+  updated_at       DateTime          @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  // 关联关系 - 自关联支持权限树结构
+  parent           Permission?       @relation("PermissionToPermission", fields: [parent_id], references: [id])
+  children         Permission[]      @relation("PermissionToPermission")
+  role_permissions RolePermission[]
+
+  @@unique([code], map: "uk_permissions_code")
+  @@index([parent_id], map: "idx_permissions_parent_id")
+  @@index([type], map: "idx_permissions_type")
+  @@map("permissions")
+}
+
+// 用户角色关联表 (admin_user_roles)
+// 多对多关联：管理员用户 ↔ 角色
+model AdminUserRole {
+  id         String    @id @default(uuid()) @map("id") @db.VarChar(36)
+  user_id    String    @map("user_id") @db.VarChar(36)
+  role_id    String    @map("role_id") @db.VarChar(36)
+  created_at DateTime  @default(now()) @map("created_at") @db.Timestamp(0)
+
+  // 关联关系
+  admin_user AdminUser @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  role       Role      @relation(fields: [role_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, role_id], map: "uk_admin_user_roles_user_role")
+  @@index([user_id], map: "idx_admin_user_roles_user_id")
+  @@index([role_id], map: "idx_admin_user_roles_role_id")
+  @@map("admin_user_roles")
+}
+
+// 角色权限关联表 (role_permissions)
+// 多对多关联：角色 ↔ 权限
+model RolePermission {
+  id            String     @id @default(uuid()) @map("id") @db.VarChar(36)
+  role_id       String     @map("role_id") @db.VarChar(36)
+  permission_id String     @map("permission_id") @db.VarChar(36)
+  created_at    DateTime   @default(now()) @map("created_at") @db.Timestamp(0)
+
+  // 关联关系
+  role          Role       @relation(fields: [role_id], references: [id], onDelete: Cascade)
+  permission    Permission @relation(fields: [permission_id], references: [id], onDelete: Cascade)
+
+  @@unique([role_id, permission_id], map: "uk_role_permissions_role_permission")
+  @@index([role_id], map: "idx_role_permissions_role_id")
+  @@index([permission_id], map: "idx_role_permissions_permission_id")
+  @@map("role_permissions")
+}
+
+// 部门表 (departments)
+// 支持树形结构的组织架构管理
+model Department {
+  id          String        @id @default(uuid()) @map("id") @db.VarChar(36)
+  name        String        @map("name") @db.VarChar(50)
+  parent_id   String?       @map("parent_id") @db.VarChar(36)
+  leader_id   String?       @map("leader_id") @db.VarChar(36)
+  phone       String?       @map("phone") @db.VarChar(20)
+  email       String?       @map("email") @db.VarChar(100)
+  sort        Int           @default(0) @map("sort")
+  status      Int           @default(1) @map("status") @db.TinyInt        // 1:启用 0:禁用
+  created_at  DateTime      @default(now()) @map("created_at") @db.Timestamp(0)
+  updated_at  DateTime      @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  // 关联关系 - 自关联支持部门树结构
+  parent      Department?   @relation("DepartmentToParent", fields: [parent_id], references: [id])
+  children    Department[]  @relation("DepartmentToParent")
+  admin_users AdminUser[]
+
+  @@index([parent_id], map: "idx_departments_parent_id")
+  @@index([leader_id], map: "idx_departments_leader_id")
+  @@map("departments")
+}
+
+// 操作日志表 (operation_logs)
+// 记录管理员的所有操作行为，用于审计
+model OperationLog {
+  id           String     @id @default(uuid()) @map("id") @db.VarChar(36)
+  user_id      String?    @map("user_id") @db.VarChar(36)
+  user_type    String     @map("user_type") @db.VarChar(20)       // admin:管理员 user:普通用户
+  module       String     @map("module") @db.VarChar(50)
+  action       String     @map("action") @db.VarChar(50)
+  description  String?    @map("description") @db.VarChar(255)
+  url          String?    @map("url") @db.VarChar(255)
+  method       String?    @map("method") @db.VarChar(10)
+  params       Json?      @map("params")
+  ip           String?    @map("ip") @db.VarChar(45)
+  user_agent   String?    @map("user_agent") @db.VarChar(500)
+  execute_time Int?       @map("execute_time")                   // 执行时间(ms)
+  status       Int        @default(1) @map("status") @db.TinyInt  // 1:成功 0:失败
+  error_msg    String?    @map("error_msg") @db.Text
+  created_at   DateTime   @default(now()) @map("created_at") @db.Timestamp(0)
+
+  // 关联关系
+  admin_user   AdminUser? @relation(fields: [user_id], references: [id])
+
+  @@index([user_id], map: "idx_operation_logs_user_id")
+  @@index([module], map: "idx_operation_logs_module")
+  @@index([action], map: "idx_operation_logs_action")
+  @@index([created_at], map: "idx_operation_logs_created_at")
+  @@map("operation_logs")
+}
+
+// 登录日志表 (login_logs)
+// 记录管理员登录行为
+model LoginLog {
+  id          String     @id @default(uuid()) @map("id") @db.VarChar(36)
+  user_id     String?    @map("user_id") @db.VarChar(36)
+  user_type   String     @map("user_type") @db.VarChar(20)       // admin:管理员 user:普通用户
+  username    String     @map("username") @db.VarChar(50)
+  ip          String?    @map("ip") @db.VarChar(45)
+  user_agent  String?    @map("user_agent") @db.VarChar(500)
+  login_time  DateTime   @map("login_time") @db.Timestamp(0)
+  status      Int        @map("status") @db.TinyInt              // 1:成功 0:失败
+  error_msg   String?    @map("error_msg") @db.VarChar(255)
+  created_at  DateTime   @default(now()) @map("created_at") @db.Timestamp(0)
+
+  @@index([user_id], map: "idx_login_logs_user_id")
+  @@index([user_type], map: "idx_login_logs_user_type")
+  @@index([login_time], map: "idx_login_logs_login_time")
+  @@index([status], map: "idx_login_logs_status")
+  @@map("login_logs")
+}
+
+// 系统配置表 (system_configs)
+// 存储系统配置参数
+model SystemConfig {
+  id          String   @id @default(uuid()) @map("id") @db.VarChar(36)
+  key         String   @unique @map("key") @db.VarChar(100)
+  value       String?  @map("value") @db.Text
+  name        String   @map("name") @db.VarChar(100)
+  description String?  @map("description") @db.VarChar(255)
+  type        String   @default("text") @map("type") @db.VarChar(20)    // text|number|boolean|json
+  group       String   @default("system") @map("group") @db.VarChar(50)
+  options     Json?    @map("options")
+  sort        Int      @default(0) @map("sort")
+  is_public   Int      @default(0) @map("is_public") @db.TinyInt         // 1:公开 0:私有
+  created_at  DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+  updated_at  DateTime @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  @@unique([key], map: "uk_system_configs_key")
+  @@index([group], map: "idx_system_configs_group")
+  @@map("system_configs")
+}
+
+// 通知公告表 (announcements)
+// 系统通知公告管理
+model Announcement {
+  id          String   @id @default(uuid()) @map("id") @db.VarChar(36)
+  title       String   @map("title") @db.VarChar(200)
+  content     String   @map("content") @db.Text
+  type        String   @default("notice") @map("type") @db.VarChar(20)   // notice:通知 announcement:公告
+  level       String   @default("info") @map("level") @db.VarChar(20)    // info|warning|error
+  target      String   @default("all") @map("target") @db.VarChar(20)    // all:全部 admin:管理员 user:用户
+  is_top      Int      @default(0) @map("is_top") @db.TinyInt             // 1:置顶 0:普通
+  status      Int      @default(1) @map("status") @db.TinyInt             // 1:发布 0:草稿
+  publish_time DateTime? @map("publish_time") @db.Timestamp(0)
+  expire_time DateTime? @map("expire_time") @db.Timestamp(0)
+  author_id   String   @map("author_id") @db.VarChar(36)
+  read_count  Int      @default(0) @map("read_count")
+  created_at  DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+  updated_at  DateTime @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  @@index([type], map: "idx_announcements_type")
+  @@index([status], map: "idx_announcements_status")
+  @@index([publish_time], map: "idx_announcements_publish_time")
+  @@index([author_id], map: "idx_announcements_author_id")
+  @@map("announcements")
+}
+
+// 站内信表 (messages)
+// 用户间私信和系统消息
+model Message {
+  id          String   @id @default(uuid()) @map("id") @db.VarChar(36)
+  from_id     String?  @map("from_id") @db.VarChar(36)                  // 发送者ID，null表示系统消息
+  to_id       String   @map("to_id") @db.VarChar(36)                    // 接收者ID
+  title       String   @map("title") @db.VarChar(200)
+  content     String   @map("content") @db.Text
+  type        String   @default("system") @map("type") @db.VarChar(20)  // system:系统 user:用户
+  is_read     Int      @default(0) @map("is_read") @db.TinyInt           // 1:已读 0:未读
+  read_time   DateTime? @map("read_time") @db.Timestamp(0)
+  created_at  DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+
+  @@index([from_id], map: "idx_messages_from_id")
+  @@index([to_id], map: "idx_messages_to_id")
+  @@index([type], map: "idx_messages_type")
+  @@index([is_read], map: "idx_messages_is_read")
+  @@index([created_at], map: "idx_messages_created_at")
+  @@map("messages")
+}
+
+// 错误码表 (error_codes)
+// 系统错误码管理
+model ErrorCode {
+  id          String   @id @default(uuid()) @map("id") @db.VarChar(36)
+  code        String   @unique @map("code") @db.VarChar(20)
+  message     String   @map("message") @db.VarChar(255)
+  description String?  @map("description") @db.VarChar(500)
+  module      String   @map("module") @db.VarChar(50)
+  level       String   @default("error") @map("level") @db.VarChar(20)   // info|warning|error
+  solution    String?  @map("solution") @db.Text
+  status      Int      @default(1) @map("status") @db.TinyInt             // 1:启用 0:禁用
+  created_at  DateTime @default(now()) @map("created_at") @db.Timestamp(0)
+  updated_at  DateTime @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  @@unique([code], map: "uk_error_codes_code")
+  @@index([module], map: "idx_error_codes_module")
+  @@index([level], map: "idx_error_codes_level")
+  @@map("error_codes")
 }

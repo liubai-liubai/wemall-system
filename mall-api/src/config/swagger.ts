@@ -2,7 +2,7 @@
  * Swagger API文档配置
  * 使用OpenAPI 3.0规范自动生成API文档
  * 遵循项目开发规范：统一响应格式、错误处理、认证方式
- * @author AI Assistant
+ * @author 刘白 & AI Assistant
  * @since 1.0.0
  */
 
@@ -308,28 +308,40 @@ const swaggerOptions: swaggerJSDoc.Options = {
     },
     tags: [
       {
-        name: 'Auth',
+        name: '认证模块',
         description: '认证模块 - 用户登录、注册、令牌管理'
       },
       {
-        name: 'Health', 
+        name: '健康检查', 
         description: '健康检查 - 系统状态监控'
       },
       {
-        name: 'User',
+        name: '权限管理',
+        description: '权限管理 - 权限CRUD操作和权限检查'
+      },
+      {
+        name: '角色管理',
+        description: '角色管理 - 角色CRUD操作和角色权限分配'
+      },
+      {
+        name: '部门管理',
+        description: '部门管理 - 部门CRUD操作和部门树形结构管理'
+      },
+      {
+        name: '管理员用户',
+        description: '管理员用户 - 管理员用户CRUD操作和用户角色分配'
+      },
+      {
+        name: '用户管理',
         description: '用户管理 - 用户信息、地址管理'
       },
       {
-        name: 'Product',
+        name: '商品管理',
         description: '商品管理 - 商品分类、商品信息、库存管理'
       },
       {
-        name: 'Order',
+        name: '订单管理',
         description: '订单管理 - 购物车、订单创建、支付、物流'
-      },
-      {
-        name: 'System',
-        description: '系统管理 - 管理员、权限、配置'
       }
     ]
   },

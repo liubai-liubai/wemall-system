@@ -1,7 +1,7 @@
 /**
  * 认证服务
  * 处理用户认证、登录、令牌管理等核心业务逻辑
- * @author AI Assistant
+ * @author 刘白 & AI Assistant
  * @since 1.0.0
  */
 

@@ -1,12 +1,12 @@
 /**
  * 健康检查路由
  * 提供服务状态检查接口，用于监控和负载均衡
- * @author AI Assistant
+ * @author 刘白 & AI Assistant
  * @since 1.0.0
  */
 
 import Router from '@koa/router';
-import { healthController } from '../controllers/health-controller.ts';
+import { healthController } from '../controllers/health-controller.js';
 
 // 创建健康检查路由实例
 const router = new Router();

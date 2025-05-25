@@ -1,13 +1,13 @@
 /**
  * 健康检查控制器
  * 处理服务健康状态检查的业务逻辑
- * @author AI Assistant
+ * @author 刘白 & AI Assistant
  * @since 1.0.0
  */
 
 import { Context } from 'koa';
-import { success, error, HTTP_STATUS } from '../utils/response.ts';
-import { prisma } from '../config/database.ts';
+import { success, error, HTTP_STATUS } from '../utils/response.js';
+import { prisma } from '../config/database.js';
 
 /**
  * 基础健康状态接口
@@ -50,9 +50,10 @@ class HealthController {
         uptime: process.uptime()
       };
 
-      success(ctx, healthStatus, '服务运行正常', HTTP_STATUS.OK);
+      ctx.body = success(healthStatus, '服务运行正常', HTTP_STATUS.OK);
     } catch (err) {
-      error(ctx, '服务状态检查失败', HTTP_STATUS.INTERNAL_SERVER_ERROR);
+      ctx.status = HTTP_STATUS.INTERNAL_SERVER_ERROR;
+      ctx.body = error('服务状态检查失败', HTTP_STATUS.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -101,13 +102,14 @@ class HealthController {
       };
 
       if (dbStatus === 'connected') {
-        success(ctx, detailedStatus, '服务详细状态检查完成', HTTP_STATUS.OK);
+        ctx.body = success(detailedStatus, '服务详细状态检查完成', HTTP_STATUS.OK);
       } else {
-        error(ctx, '数据库连接失败', HTTP_STATUS.SERVICE_UNAVAILABLE, detailedStatus);
+        ctx.body = error('数据库连接失败', HTTP_STATUS.SERVICE_UNAVAILABLE, detailedStatus);
       }
     } catch (err) {
       console.error('详细健康检查失败:', err);
-      error(ctx, '详细状态检查失败', HTTP_STATUS.INTERNAL_SERVER_ERROR);
+      ctx.status = HTTP_STATUS.INTERNAL_SERVER_ERROR;
+      ctx.body = error('详细状态检查失败', HTTP_STATUS.INTERNAL_SERVER_ERROR);
     }
   }
 }

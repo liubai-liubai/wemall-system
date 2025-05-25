@@ -1,7 +1,7 @@
 /**
  * 数据库配置文件
  * 统一管理Prisma客户端实例和数据库连接配置
- * @author AI Assistant
+ * @author 刘白 & AI Assistant
  * @since 1.0.0
  */
 
