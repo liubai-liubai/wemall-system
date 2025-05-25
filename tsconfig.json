@@ -32,11 +32,9 @@
     // 模块解析
     "baseUrl": ".",
     "paths": {
-      "@/*": ["packages/*/src/*"],
-      "@shared/*": ["packages/shared/*"],
-      "@api/*": ["packages/mall-api/src/*"],
-      "@admin/*": ["packages/mall-admin/src/*"],
-      "@miniprogram/*": ["packages/mall-miniprogram/src/*"]
+      "@api/*": ["mall-api/src/*"],
+      "@admin/*": ["mall-admin/src/*"],
+      "@miniprogram/*": ["mall-miniprogram/src/*"]
     },
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
@@ -57,7 +55,7 @@
     "incremental": true,
     "tsBuildInfoFile": "./node_modules/.cache/tsbuildinfo"
   },
-  "include": ["packages/*/src/**/*", "packages/*/types/**/*", "**/*.d.ts"],
+  "include": ["mall-*/src/**/*", "**/*.d.ts"],
   "exclude": [
     "node_modules",
     "dist",
@@ -67,9 +65,8 @@
     "build"
   ],
   "references": [
-    { "path": "./packages/shared" },
-    { "path": "./packages/mall-api" },
-    { "path": "./packages/mall-admin" },
-    { "path": "./packages/mall-miniprogram" }
+    { "path": "./mall-api" },
+    { "path": "./mall-admin" },
+    { "path": "./mall-miniprogram" }
   ]
 }
