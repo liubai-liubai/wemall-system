@@ -31,7 +31,10 @@
     "joi": "^17.11.0",
     "jsonwebtoken": "^9.0.2",
     "koa": "^2.14.2",
-    "koa-bodyparser": "^4.4.1"
+    "koa-bodyparser": "^4.4.1",
+    "koa-static": "^5.0.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-dist": "^5.10.3"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.2",
@@ -41,7 +44,9 @@
     "@types/koa__cors": "^5.0.0",
     "@types/koa__router": "^12.0.4",
     "@types/koa-bodyparser": "^4.3.10",
+    "@types/koa-static": "^4.0.4",
     "@types/node": "^20.10.4",
+    "@types/swagger-jsdoc": "^6.0.4",
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",
     "eslint": "^8.55.0",
@@ -58,7 +63,9 @@
     "prisma",
     "mysql",
     "api",
-    "microservice"
+    "microservice",
+    "swagger",
+    "openapi"
   ],
   "author": "Your Name <your-email@example.com>",
   "license": "Apache-2.0",

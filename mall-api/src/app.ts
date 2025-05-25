@@ -10,6 +10,7 @@ import {
   IErrorData 
 } from './types/common.ts';
 import mainRouter from './routes/index.ts';
+import { swaggerUI, docsRedirect } from './middleware/swagger.ts';
 
 /**
  * 创建Koa应用实例
@@ -25,6 +26,12 @@ const setupMiddleware = (): void => {
   
   // 请求体解析
   app.use(bodyParser());
+  
+  // 新增：API文档重定向中间件
+  app.use(docsRedirect());
+  
+  // 新增：Swagger UI中间件
+  app.use(swaggerUI());
   
   // 请求日志中间件
   app.use(async (ctx, next) => {
@@ -99,7 +106,7 @@ const initializeApp = async (): Promise<void> => {
     // 1. 先连接数据库
     await initDatabase();
     
-    // 2. 先配置基础中间件（包括bodyParser）
+    // 2. 先配置基础中间件（包括bodyParser和Swagger）
     setupMiddleware();
     
     // 3. 注册主路由（这样路由就能使用bodyParser解析的数据）
@@ -132,6 +139,7 @@ const startServer = (): void => {
     logger.info(`本地地址: http://localhost:${PORT}`);
     logger.info(`健康检查: http://localhost:${PORT}/health`);
     logger.info(`数据库测试: http://localhost:${PORT}/db-test`);
+    logger.info(`API文档: http://localhost:${PORT}/api-docs`);
   });
 };
 

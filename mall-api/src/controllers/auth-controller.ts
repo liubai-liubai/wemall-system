@@ -16,9 +16,69 @@ import { IWechatLoginRequest } from '../types/user.ts';
  */
 class AuthController {
   /**
-   * 微信小程序登录
-   * POST /api/v1/auth/wechat-login
-   * @param ctx Koa上下文
+   * @swagger
+   * /api/v1/auth/wechat-login:
+   *   post:
+   *     tags: [Auth]
+   *     summary: 微信小程序登录
+   *     description: |
+   *       使用微信小程序授权码进行登录，获取用户信息和访问令牌
+   *       
+   *       ### 流程说明
+   *       1. 小程序调用 wx.login() 获取授权码 code
+   *       2. 将 code 发送到后端进行验证
+   *       3. 后端调用微信API获取 openId 和 session_key
+   *       4. 查找或创建用户记录
+   *       5. 生成 JWT 访问令牌和刷新令牌
+   *       6. 返回用户信息和令牌
+   *       
+   *       ### 注意事项
+   *       - code 只能使用一次，有效期5分钟
+   *       - 同一用户多次登录会更新最后登录时间
+   *       - 生成的令牌有效期为7天
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/WechatLoginRequest'
+   *           examples:
+   *             basic:
+   *               summary: 基础登录
+   *               value:
+   *                 code: "0234A0z01Hx5nV1kCNy01Mzsz34A0z0K"
+   *     responses:
+   *       200:
+   *         description: 登录成功
+   *         content:
+   *           application/json:
+   *             schema:
+   *               allOf:
+   *                 - $ref: '#/components/schemas/ApiResponse'
+   *                 - type: object
+   *                   properties:
+   *                     data:
+   *                       $ref: '#/components/schemas/LoginResponse'
+   *       400:
+   *         description: 请求参数错误
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *             examples:
+   *               missingCode:
+   *                 summary: 缺少授权码
+   *                 value:
+   *                   code: 400
+   *                   message: "微信登录凭证code不能为空"
+   *                   data: null
+   *                   timestamp: 1703155200000
+   *       500:
+   *         description: 服务器内部错误
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   async wechatLogin(ctx: Context): Promise<void> {
     try {
@@ -73,9 +133,46 @@ class AuthController {
   }
 
   /**
-   * 刷新访问令牌
-   * POST /api/v1/auth/refresh-token
-   * @param ctx Koa上下文
+   * @swagger
+   * /api/v1/auth/refresh-token:
+   *   post:
+   *     tags: [Auth]
+   *     summary: 刷新访问令牌
+   *     description: |
+   *       使用刷新令牌获取新的访问令牌，延长用户登录状态
+   *       
+   *       ### 使用场景
+   *       - 访问令牌即将过期时主动刷新
+   *       - API返回401未授权时自动刷新
+   *       - 定时刷新保持登录状态
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/RefreshTokenRequest'
+   *     responses:
+   *       200:
+   *         description: 令牌刷新成功
+   *         content:
+   *           application/json:
+   *             schema:
+   *               allOf:
+   *                 - $ref: '#/components/schemas/ApiResponse'
+   *                 - type: object
+   *                   properties:
+   *                     data:
+   *                       type: object
+   *                       properties:
+   *                         token:
+   *                           type: string
+   *                           description: 新的访问令牌
+   *       401:
+   *         description: 令牌无效或已过期
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   async refreshToken(ctx: Context): Promise<void> {
     try {
@@ -106,9 +203,32 @@ class AuthController {
   }
 
   /**
-   * 用户登出
-   * POST /api/v1/auth/logout
-   * @param ctx Koa上下文
+   * @swagger
+   * /api/v1/auth/logout:
+   *   post:
+   *     tags: [Auth]
+   *     summary: 用户登出
+   *     description: 用户主动登出，清除服务端的登录状态
+   *     security:
+   *       - BearerAuth: []
+   *     responses:
+   *       200:
+   *         description: 登出成功
+   *         content:
+   *           application/json:
+   *             schema:
+   *               allOf:
+   *                 - $ref: '#/components/schemas/ApiResponse'
+   *                 - type: object
+   *                   properties:
+   *                     data:
+   *                       type: 'null'
+   *       401:
+   *         description: 未授权访问
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   async logout(ctx: Context): Promise<void> {
     try {
@@ -136,9 +256,32 @@ class AuthController {
   }
 
   /**
-   * 获取当前用户信息
-   * GET /api/v1/auth/profile
-   * @param ctx Koa上下文
+   * @swagger
+   * /api/v1/auth/profile:
+   *   get:
+   *     tags: [Auth]
+   *     summary: 获取当前用户信息
+   *     description: 获取当前登录用户的详细信息
+   *     security:
+   *       - BearerAuth: []
+   *     responses:
+   *       200:
+   *         description: 获取用户信息成功
+   *         content:
+   *           application/json:
+   *             schema:
+   *               allOf:
+   *                 - $ref: '#/components/schemas/ApiResponse'
+   *                 - type: object
+   *                   properties:
+   *                     data:
+   *                       $ref: '#/components/schemas/UserInfo'
+   *       401:
+   *         description: 未授权访问
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   async getProfile(ctx: Context): Promise<void> {
     try {
