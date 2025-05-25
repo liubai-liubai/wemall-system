@@ -178,9 +178,9 @@ npm run clean:miniprogram  # 清理小程序
 
 ## 📞 联系我们
 
-- 项目地址: [GitHub](https://github.com/your-username/wemall-system)
-- 问题反馈: [Issues](https://github.com/your-username/wemall-system/issues)
-- 邮箱: your-email@example.com
+- 项目地址: [GitHub](https://github.com/liubai-liubai/wemall-system)
+- 问题反馈: [Issues](https://github.com/liubai-liubai/wemall-system/issues)
+- 邮箱: wyply116@gmail.com
 
 ---
 
