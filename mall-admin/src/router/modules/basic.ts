@@ -22,11 +22,14 @@ export const basicRoutes: RouteRecordRaw[] = [
     },
   },
 
-  // 主布局
+  // 主布局 - 首页
   {
     path: '/',
     component: Layout,
     redirect: '/dashboard',
+    meta: {
+      alwaysShow: true, // 强制显示为一级菜单，不折叠
+    },
     children: [
       // 仪表盘
       {

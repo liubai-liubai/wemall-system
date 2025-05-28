@@ -66,7 +66,18 @@ const activeMenu = computed(() => {
 // 菜单路由（过滤掉隐藏的路由）
 const menuRoutes = computed(() => {
   return router.getRoutes().filter(route => {
-    return route.meta && !route.meta.hidden && route.children && route.children.length > 0;
+    // 如果路由被隐藏，不显示
+    if (route.meta?.hidden) {
+      return false;
+    }
+    
+    // 如果没有meta信息，不显示
+    if (!route.meta) {
+      return false;
+    }
+    
+    // 如果标记为alwaysShow或者有子菜单，显示
+    return route.meta.alwaysShow || (route.children && route.children.length > 0);
   });
 });
 

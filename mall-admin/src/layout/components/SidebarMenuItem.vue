@@ -74,26 +74,40 @@ const onlyOneChild = computed(() => {
   const children = visibleChildren.value;
   
   if (children.length === 1) {
-    return children[0];
+    const child = children[0];
+    return {
+      ...child,
+      path: resolvePath(child.path),
+    };
   }
   
   if (children.length === 0) {
     return props.item;
   }
   
-  if (props.item.meta?.alwaysShow) {
-    return children[0];
+  if (props.item.meta?.alwaysShow && children.length > 0) {
+    const child = children[0];
+    return {
+      ...child,
+      path: resolvePath(child.path),
+    };
   }
   
   return null;
 });
 
 // 解析路径
-const resolvePath = (routePath: string) => {
+const resolvePath = (routePath: string): string => {
+  // 如果已经是完整路径，直接返回
   if (routePath.startsWith('/')) {
     return routePath;
   }
-  return props.basePath + '/' + routePath;
+  
+  // 确保basePath以/结尾但不是多个/
+  const normalizedBasePath = props.basePath.replace(/\/+$/, '');
+  
+  // 拼接路径，避免双斜杠
+  return `${normalizedBasePath}/${routePath}`;
 };
 </script>
 
