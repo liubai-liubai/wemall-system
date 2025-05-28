@@ -74,7 +74,6 @@ export class AdminUserService {
       const userData = formatAdminUser(user) as IAdminUser;
       return new AdminUserDTO(userData, {
         departmentName: user.department?.name,
-        roles: user.admin_user_roles?.map((aur: any) => aur.role.name),
         maskSensitiveData: true, // 列表查询默认脱敏
       });
     });

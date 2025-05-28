@@ -114,7 +114,7 @@ export class AdminUserDTO {
   lastLoginTime?: Date;
   createdAt: Date;
   updatedAt: Date;
-  roles?: string[];
+  roles?: string[] | Array<{id: string; name: string}>;
   permissions?: string[];
 
   constructor(user: IAdminUser, options?: {
@@ -136,7 +136,7 @@ export class AdminUserDTO {
     this.lastLoginTime = user.lastLoginTime;
     this.createdAt = user.createdAt;
     this.updatedAt = user.updatedAt;
-    this.roles = options?.roles;
+    this.roles = options?.roles || (user as any).roles;
     this.permissions = options?.permissions;
   }
 

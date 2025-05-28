@@ -17,7 +17,11 @@ export function formatDatabaseData<T = any>(data: any): T {
     return data.map(item => formatDatabaseData(item)) as T;
   }
   
-  if (typeof data === 'object') {
+  if (data instanceof Date) {
+    return data as T;
+  }
+  
+  if (typeof data === 'object' && data.constructor === Object) {
     const formatted: any = {};
     
     Object.keys(data).forEach(key => {

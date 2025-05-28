@@ -384,8 +384,11 @@ const fetchUsers = async () => {
     
     const response = await getAdminUserList(params);
     if (response.code === 200 && response.data) {
-      tableData.value = response.data.list || [];
-      pagination.total = response.data.total || 0;
+      const data = response.data as any;
+      const listData = data.list || [];
+      
+      tableData.value = listData;
+      pagination.total = data.total || 0;
     } else {
       throw new Error(response.message || '获取用户列表失败');
     }
@@ -415,7 +418,7 @@ const fetchDepartments = async () => {
         });
         return result;
       };
-      departmentOptions.value = flattenDepartments(response.data);
+      departmentOptions.value = flattenDepartments(response.data as Department[]);
     }
   } catch (error: any) {
     console.error('获取部门列表失败:', error);
@@ -576,33 +579,37 @@ const handleSubmit = async () => {
     await formRef.value.validate();
     submitLoading.value = true;
 
-    const submitData = {
-      username: formData.username,
-      realName: formData.realName,
-      email: formData.email,
-      phone: formData.phone,
-      departmentId: formData.departmentId,
-      roleIds: formData.roleIds,
-      status: formData.status,
-      remark: formData.remark,
-      ...(isEdit.value ? {} : { password: formData.password })
-    };
-
-    let response;
     if (isEdit.value) {
-      response = await updateAdminUser(formData.id, submitData);
+      // 编辑
+      await updateAdminUser(formData.id, {
+        realName: formData.realName,
+        email: formData.email,
+        phone: formData.phone,
+        departmentId: formData.departmentId,
+        status: formData.status,
+        roleIds: formData.roleIds,
+      });
     } else {
-      response = await createAdminUser(submitData);
+      // 新增
+      if (!formData.password) {
+        ElMessage.error('密码不能为空');
+        return;
+      }
+      await createAdminUser({
+        username: formData.username,
+        password: formData.password,
+        realName: formData.realName,
+        email: formData.email,
+        phone: formData.phone,
+        departmentId: formData.departmentId,
+        roleIds: formData.roleIds,
+      });
     }
 
-    if (response.code === 200) {
-      const action = isEdit.value ? '更新' : '创建';
-      ElMessage.success(`${action}成功`);
-      dialogVisible.value = false;
-      fetchUsers();
-    } else {
-      throw new Error(response.message || '操作失败');
-    }
+    const action = isEdit.value ? '更新' : '创建';
+    ElMessage.success(`${action}成功`);
+    dialogVisible.value = false;
+    fetchUsers();
   } catch (error: any) {
     console.error('提交表单失败:', error);
     ElMessage.error(error.message || '操作失败');
