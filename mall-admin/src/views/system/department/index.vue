@@ -232,6 +232,13 @@ import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'elem
 import { Plus, Expand, Fold, Search, Refresh } from '@element-plus/icons-vue';
 import { formatDateTime, buildTree } from '@/utils';
 import type { Department } from '@/types';
+// 导入API接口
+import { 
+  getDepartmentTree, 
+  createDepartment, 
+  updateDepartment, 
+  deleteDepartment 
+} from '@/api/department';
 
 // 响应式数据
 const loading = ref(false);
@@ -327,63 +334,82 @@ const filterCurrentDept = (tree: Department[], currentId: string): Department[] 
 const fetchDepartments = async () => {
   loading.value = true;
   try {
-    // TODO: 调用API获取部门列表
-    const mockData: Department[] = [
-      {
-        id: '1',
-        name: '总公司',
-        code: 'HQ',
-        parentId: '',
-        parentName: '',
-        managerName: '张三',
-        phone: '13800138000',
-        email: 'hq@example.com',
-        sort: 1,
-        status: 1,
-        description: '总公司',
-        createdAt: '2024-01-01 09:00:00',
-        updatedAt: '2024-01-01 09:00:00',
-      },
-      {
-        id: '2',
-        name: '技术部',
-        code: 'TECH',
-        parentId: '1',
-        parentName: '总公司',
-        managerName: '李四',
-        phone: '13800138001',
-        email: 'tech@example.com',
-        sort: 1,
-        status: 1,
-        description: '技术研发部门',
-        createdAt: '2024-01-01 09:00:00',
-        updatedAt: '2024-01-01 09:00:00',
-      },
-      {
-        id: '3',
-        name: '产品部',
-        code: 'PRODUCT',
-        parentId: '1',
-        parentName: '总公司',
-        managerName: '王五',
-        phone: '13800138002',
-        email: 'product@example.com',
-        sort: 2,
-        status: 1,
-        description: '产品设计部门',
-        createdAt: '2024-01-01 09:00:00',
-        updatedAt: '2024-01-01 09:00:00',
-      },
-    ];
-    
-    departmentList.value = mockData;
-    tableData.value = buildTree(mockData, {
-      id: 'id',
-      parentId: 'parentId',
-      children: 'children'
-    });
-  } catch (error) {
-    ElMessage.error('获取部门列表失败');
+    const response = await getDepartmentTree();
+    if (response.code === 200 && response.data) {
+      // 将DepartmentTreeNode转换为Department类型
+      const convertToDepartment = (node: any): Department => ({
+        id: node.id,
+        name: node.name,
+        code: node.code || '',
+        parentId: node.parentId,
+        parentName: node.parentName || '',
+        managerName: node.managerName || '',
+        phone: node.phone || '',
+        email: node.email || '',
+        sort: node.sort || 0,
+        status: node.status,
+        description: node.description || '',
+        userCount: node.userCount || 0,
+        children: node.children ? node.children.map(convertToDepartment) : undefined,
+        createdAt: node.createdAt || new Date().toISOString(),
+        updatedAt: node.updatedAt || new Date().toISOString(),
+      });
+
+      const departments = response.data.map(convertToDepartment);
+      
+      // 先保存完整的部门列表（扁平化）
+      const flattenDepartments = (departments: Department[]): Department[] => {
+        const result: Department[] = [];
+        departments.forEach(dept => {
+          result.push(dept);
+          if (dept.children && dept.children.length > 0) {
+            result.push(...flattenDepartments(dept.children));
+          }
+        });
+        return result;
+      };
+      
+      departmentList.value = flattenDepartments(departments);
+      
+      // 应用搜索过滤
+      let filteredData = [...departments];
+      if (searchForm.name) {
+        const filterByName = (departments: Department[]): Department[] => {
+          return departments.filter(dept => {
+            const match = dept.name.includes(searchForm.name);
+            if (dept.children) {
+              dept.children = filterByName(dept.children);
+              return match || dept.children.length > 0;
+            }
+            return match;
+          });
+        };
+        filteredData = filterByName(filteredData);
+      }
+      
+      if (searchForm.status !== undefined) {
+        const filterByStatus = (departments: Department[]): Department[] => {
+          return departments.filter(dept => {
+            const match = dept.status === searchForm.status;
+            if (dept.children) {
+              dept.children = filterByStatus(dept.children);
+              return match || dept.children.length > 0;
+            }
+            return match;
+          });
+        };
+        filteredData = filterByStatus(filteredData);
+      }
+      
+      tableData.value = filteredData;
+    } else {
+      throw new Error(response.message || '获取部门列表失败');
+    }
+  } catch (error: any) {
+    console.error('获取部门列表失败:', error);
+    ElMessage.error(error.message || '获取部门列表失败');
+    departmentList.value = [];
+    tableData.value = [];
   } finally {
     loading.value = false;
   }
@@ -391,7 +417,6 @@ const fetchDepartments = async () => {
 
 // 搜索处理
 const handleSearch = () => {
-  // TODO: 实现搜索逻辑
   fetchDepartments();
 };
 
@@ -407,7 +432,16 @@ const handleReset = () => {
 // 展开所有
 const expandAll = () => {
   if (tableRef.value) {
-    // TODO: 实现展开所有逻辑
+    // 递归展开所有节点
+    const expandNode = (data: Department[]) => {
+      data.forEach(item => {
+        tableRef.value.toggleRowExpansion(item, true);
+        if (item.children && item.children.length > 0) {
+          expandNode(item.children);
+        }
+      });
+    };
+    expandNode(tableData.value);
     ElMessage.success('已展开所有部门');
   }
 };
@@ -415,7 +449,16 @@ const expandAll = () => {
 // 折叠所有
 const collapseAll = () => {
   if (tableRef.value) {
-    // TODO: 实现折叠所有逻辑
+    // 递归折叠所有节点
+    const collapseNode = (data: Department[]) => {
+      data.forEach(item => {
+        tableRef.value.toggleRowExpansion(item, false);
+        if (item.children && item.children.length > 0) {
+          collapseNode(item.children);
+        }
+      });
+    };
+    collapseNode(tableData.value);
     ElMessage.success('已折叠所有部门');
   }
 };
@@ -450,7 +493,7 @@ const handleEdit = (row: Department) => {
     id: row.id,
     name: row.name,
     code: row.code,
-    parentId: row.parentId,
+    parentId: row.parentId || '',
     managerName: row.managerName || '',
     phone: row.phone || '',
     email: row.email || '',
@@ -470,12 +513,17 @@ const handleDelete = async (row: Department) => {
       type: 'warning',
     });
 
-    // TODO: 调用API删除部门
-    ElMessage.success('删除成功');
-    fetchDepartments();
-  } catch (error) {
+    const response = await deleteDepartment(row.id);
+    if (response.code === 200) {
+      ElMessage.success('删除成功');
+      fetchDepartments();
+    } else {
+      throw new Error(response.message || '删除失败');
+    }
+  } catch (error: any) {
     if (error !== 'cancel') {
-      ElMessage.error('删除失败');
+      console.error('删除部门失败:', error);
+      ElMessage.error(error.message || '删除失败');
     }
   }
 };
@@ -490,12 +538,18 @@ const handleToggleStatus = async (row: Department) => {
       type: 'warning',
     });
 
-    // TODO: 调用API切换状态
-    row.status = row.status === 1 ? 0 : 1;
-    ElMessage.success(`${action}成功`);
-  } catch (error) {
+    const newStatus = row.status === 1 ? 0 : 1;
+    const response = await updateDepartment(row.id, { status: newStatus });
+    if (response.code === 200) {
+      row.status = newStatus;
+      ElMessage.success(`${action}成功`);
+    } else {
+      throw new Error(response.message || `${action}失败`);
+    }
+  } catch (error: any) {
     if (error !== 'cancel') {
-      ElMessage.error(`${action}失败`);
+      console.error('切换状态失败:', error);
+      ElMessage.error(error.message || `${action}失败`);
     }
   }
 };
@@ -508,14 +562,36 @@ const handleSubmit = async () => {
     await formRef.value.validate();
     submitLoading.value = true;
 
-    // TODO: 调用API提交表单
-    const action = isEdit.value ? '更新' : '创建';
-    ElMessage.success(`${action}成功`);
-    
-    dialogVisible.value = false;
-    fetchDepartments();
-  } catch (error) {
-    console.error('表单验证失败:', error);
+    const submitData = {
+      name: formData.name,
+      code: formData.code,
+      parentId: formData.parentId || undefined,
+      managerName: formData.managerName,
+      phone: formData.phone,
+      email: formData.email,
+      sort: formData.sort,
+      status: formData.status,
+      description: formData.description,
+    };
+
+    let response;
+    if (isEdit.value) {
+      response = await updateDepartment(formData.id, submitData);
+    } else {
+      response = await createDepartment(submitData);
+    }
+
+    if (response.code === 200) {
+      const action = isEdit.value ? '更新' : '创建';
+      ElMessage.success(`${action}成功`);
+      dialogVisible.value = false;
+      fetchDepartments();
+    } else {
+      throw new Error(response.message || '操作失败');
+    }
+  } catch (error: any) {
+    console.error('提交表单失败:', error);
+    ElMessage.error(error.message || '操作失败');
   } finally {
     submitLoading.value = false;
   }

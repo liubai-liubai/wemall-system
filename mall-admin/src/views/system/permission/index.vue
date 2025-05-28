@@ -304,6 +304,13 @@ import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'elem
 import { Plus, Search, Refresh, Expand, Fold } from '@element-plus/icons-vue';
 import { formatDateTime, buildTree } from '@/utils';
 import type { Permission } from '@/types';
+// 导入API接口
+import { 
+  getPermissionTree, 
+  createPermission, 
+  updatePermission, 
+  deletePermission 
+} from '@/api/permission';
 
 // 响应式数据
 const loading = ref(false);
@@ -424,95 +431,111 @@ const filterCurrentPermission = (tree: Permission[], currentId: string): Permiss
 const fetchPermissions = async () => {
   loading.value = true;
   try {
-    // TODO: 调用API获取权限列表
-    const mockData: Permission[] = [
-      {
-        id: '1',
-        name: '系统管理',
-        code: 'system',
-        type: 'menu',
-        path: '/system',
-        component: 'Layout',
-        icon: 'Setting',
-        sort: 1,
-        status: 1,
-        createdAt: '2024-01-01 09:00:00',
-        updatedAt: '2024-01-01 09:00:00',
-      },
-      {
-        id: '11',
-        name: '用户管理',
-        code: 'system:user',
-        type: 'menu',
-        parentId: '1',
-        path: '/system/user',
-        component: 'system/user/index',
-        icon: 'User',
-        sort: 1,
-        status: 1,
-        createdAt: '2024-01-01 09:00:00',
-        updatedAt: '2024-01-01 09:00:00',
-      },
-      {
-        id: '111',
-        name: '用户新增',
-        code: 'system:user:add',
-        type: 'button',
-        parentId: '11',
-        sort: 1,
-        status: 1,
-        createdAt: '2024-01-01 09:00:00',
-        updatedAt: '2024-01-01 09:00:00',
-      },
-      {
-        id: '112',
-        name: '用户编辑',
-        code: 'system:user:edit',
-        type: 'button',
-        parentId: '11',
-        sort: 2,
-        status: 1,
-        createdAt: '2024-01-01 09:00:00',
-        updatedAt: '2024-01-01 09:00:00',
-      },
-      {
-        id: '12',
-        name: '角色管理',
-        code: 'system:role',
-        type: 'menu',
-        parentId: '1',
-        path: '/system/role',
-        component: 'system/role/index',
-        icon: 'UserFilled',
-        sort: 2,
-        status: 1,
-        createdAt: '2024-01-01 09:00:00',
-        updatedAt: '2024-01-01 09:00:00',
-      },
-      {
-        id: '13',
-        name: '权限管理',
-        code: 'system:permission',
-        type: 'menu',
-        parentId: '1',
-        path: '/system/permission',
-        component: 'system/permission/index',
-        icon: 'Lock',
-        sort: 3,
-        status: 1,
-        createdAt: '2024-01-01 09:00:00',
-        updatedAt: '2024-01-01 09:00:00',
-      },
-    ];
-    
-    permissionList.value = mockData;
-    tableData.value = buildTree(mockData, {
-      id: 'id',
-      parentId: 'parentId',
-      children: 'children'
-    });
-  } catch (error) {
-    ElMessage.error('获取权限列表失败');
+    const response = await getPermissionTree();
+    if (response.code === 200 && response.data) {
+      // 将PermissionTreeNode转换为Permission类型
+      const convertToPermission = (node: any): Permission => ({
+        id: node.id,
+        name: node.name,
+        code: node.code,
+        type: node.type,
+        parentId: node.parentId,
+        path: node.path,
+        component: node.component,
+        icon: node.icon,
+        sort: node.sort || 0,
+        status: node.status,
+        hidden: node.hidden || false,
+        keepAlive: node.keepAlive || false,
+        remark: node.remark || '',
+        children: node.children ? node.children.map(convertToPermission) : undefined,
+        createdAt: node.createdAt || new Date().toISOString(),
+        updatedAt: node.updatedAt || new Date().toISOString(),
+      });
+
+      const permissions = response.data.map(convertToPermission);
+      
+      // 先保存完整的权限列表（扁平化）
+      const flattenPermissions = (permissions: Permission[]): Permission[] => {
+        const result: Permission[] = [];
+        permissions.forEach(perm => {
+          result.push(perm);
+          if (perm.children && perm.children.length > 0) {
+            result.push(...flattenPermissions(perm.children));
+          }
+        });
+        return result;
+      };
+      
+      permissionList.value = flattenPermissions(permissions);
+      
+      // 应用搜索过滤
+      let filteredData = [...permissions];
+      if (searchForm.name) {
+        const filterByName = (permissions: Permission[]): Permission[] => {
+          return permissions.filter(perm => {
+            const match = perm.name.includes(searchForm.name);
+            if (perm.children) {
+              perm.children = filterByName(perm.children);
+              return match || perm.children.length > 0;
+            }
+            return match;
+          });
+        };
+        filteredData = filterByName(filteredData);
+      }
+      
+      if (searchForm.code) {
+        const filterByCode = (permissions: Permission[]): Permission[] => {
+          return permissions.filter(perm => {
+            const match = perm.code.includes(searchForm.code);
+            if (perm.children) {
+              perm.children = filterByCode(perm.children);
+              return match || perm.children.length > 0;
+            }
+            return match;
+          });
+        };
+        filteredData = filterByCode(filteredData);
+      }
+      
+      if (searchForm.type) {
+        const filterByType = (permissions: Permission[]): Permission[] => {
+          return permissions.filter(perm => {
+            const match = perm.type === searchForm.type;
+            if (perm.children) {
+              perm.children = filterByType(perm.children);
+              return match || perm.children.length > 0;
+            }
+            return match;
+          });
+        };
+        filteredData = filterByType(filteredData);
+      }
+      
+      if (searchForm.status !== undefined) {
+        const filterByStatus = (permissions: Permission[]): Permission[] => {
+          return permissions.filter(perm => {
+            const match = perm.status === searchForm.status;
+            if (perm.children) {
+              perm.children = filterByStatus(perm.children);
+              return match || perm.children.length > 0;
+            }
+            return match;
+          });
+        };
+        filteredData = filterByStatus(filteredData);
+      }
+      
+      tableData.value = filteredData;
+    } else {
+      throw new Error(response.message || '获取权限列表失败');
+    }
+  } catch (error: any) {
+    console.error('获取权限列表失败:', error);
+    ElMessage.error(error.message || '获取权限列表失败');
+    permissionList.value = [];
+    tableData.value = [];
   } finally {
     loading.value = false;
   }
@@ -520,7 +543,6 @@ const fetchPermissions = async () => {
 
 // 搜索处理
 const handleSearch = () => {
-  // TODO: 实现搜索逻辑
   fetchPermissions();
 };
 
@@ -538,7 +560,16 @@ const handleReset = () => {
 // 展开所有
 const expandAll = () => {
   if (tableRef.value) {
-    // TODO: 实现展开所有逻辑
+    // 递归展开所有节点
+    const expandNode = (data: Permission[]) => {
+      data.forEach(item => {
+        tableRef.value.toggleRowExpansion(item, true);
+        if (item.children && item.children.length > 0) {
+          expandNode(item.children);
+        }
+      });
+    };
+    expandNode(tableData.value);
     ElMessage.success('已展开所有权限');
   }
 };
@@ -546,7 +577,16 @@ const expandAll = () => {
 // 折叠所有
 const collapseAll = () => {
   if (tableRef.value) {
-    // TODO: 实现折叠所有逻辑
+    // 递归折叠所有节点
+    const collapseNode = (data: Permission[]) => {
+      data.forEach(item => {
+        tableRef.value.toggleRowExpansion(item, false);
+        if (item.children && item.children.length > 0) {
+          collapseNode(item.children);
+        }
+      });
+    };
+    collapseNode(tableData.value);
     ElMessage.success('已折叠所有权限');
   }
 };
@@ -610,13 +650,17 @@ const handleDelete = async (row: Permission) => {
       type: 'warning',
     });
 
-    // TODO: 调用API删除权限
-    console.log('删除权限:', row.id);
-    ElMessage.success('删除成功');
-    fetchPermissions();
-  } catch (error) {
+    const response = await deletePermission(row.id);
+    if (response.code === 200) {
+      ElMessage.success('删除成功');
+      fetchPermissions();
+    } else {
+      throw new Error(response.message || '删除失败');
+    }
+  } catch (error: any) {
     if (error !== 'cancel') {
-      ElMessage.error('删除失败');
+      console.error('删除权限失败:', error);
+      ElMessage.error(error.message || '删除失败');
     }
   }
 };
@@ -631,12 +675,18 @@ const handleToggleStatus = async (row: Permission) => {
       type: 'warning',
     });
 
-    // TODO: 调用API切换状态
-    row.status = row.status === 1 ? 0 : 1;
-    ElMessage.success(`${action}成功`);
-  } catch (error) {
+    const newStatus = row.status === 1 ? 0 : 1;
+    const response = await updatePermission(row.id, { status: newStatus });
+    if (response.code === 200) {
+      row.status = newStatus;
+      ElMessage.success(`${action}成功`);
+    } else {
+      throw new Error(response.message || `${action}失败`);
+    }
+  } catch (error: any) {
     if (error !== 'cancel') {
-      ElMessage.error(`${action}失败`);
+      console.error('切换状态失败:', error);
+      ElMessage.error(error.message || `${action}失败`);
     }
   }
 };
@@ -661,14 +711,36 @@ const handleSubmit = async () => {
     await formRef.value.validate();
     submitLoading.value = true;
 
-    // TODO: 调用API提交表单
-    const action = isEdit.value ? '更新' : '创建';
-    ElMessage.success(`${action}成功`);
-    
-    dialogVisible.value = false;
-    fetchPermissions();
-  } catch (error) {
-    console.error('表单验证失败:', error);
+    const submitData = {
+      name: formData.name,
+      code: formData.code,
+      type: formData.type,
+      parentId: formData.parentId || undefined,
+      path: formData.path || undefined,
+      component: formData.component || undefined,
+      icon: formData.icon || undefined,
+      sort: formData.sort,
+      status: formData.status,
+    };
+
+    let response;
+    if (isEdit.value) {
+      response = await updatePermission(formData.id, submitData);
+    } else {
+      response = await createPermission(submitData);
+    }
+
+    if (response.code === 200) {
+      const action = isEdit.value ? '更新' : '创建';
+      ElMessage.success(`${action}成功`);
+      dialogVisible.value = false;
+      fetchPermissions();
+    } else {
+      throw new Error(response.message || '操作失败');
+    }
+  } catch (error: any) {
+    console.error('提交表单失败:', error);
+    ElMessage.error(error.message || '操作失败');
   } finally {
     submitLoading.value = false;
   }

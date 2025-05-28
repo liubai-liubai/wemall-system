@@ -60,4 +60,11 @@ export const deleteRole = (id: string) => {
  */
 export const toggleRoleStatus = (id: string, status: number) => {
   return request.patch<Role>(`/roles/${id}`, { status });
+};
+
+/**
+ * 获取角色权限ID列表
+ */
+export const getRolePermissionIds = (id: string) => {
+  return request.get<string[]>(`/roles/${id}/permissions`);
 }; 

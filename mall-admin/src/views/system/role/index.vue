@@ -253,6 +253,16 @@ import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'elem
 import { Plus, Search, Refresh } from '@element-plus/icons-vue';
 import { formatDateTime } from '@/utils';
 import type { Role, Permission } from '@/types';
+// 导入API接口
+import { 
+  getRoleList, 
+  getAllRoles, 
+  createRole, 
+  updateRole, 
+  deleteRole,
+  getRolePermissionIds 
+} from '@/api/role';
+import { getPermissionTree } from '@/api/permission';
 
 // 响应式数据
 const loading = ref(false);
@@ -316,47 +326,26 @@ const formRules: FormRules = {
 const fetchRoles = async () => {
   loading.value = true;
   try {
-    // TODO: 调用API获取角色列表
-    const mockData: Role[] = [
-      {
-        id: '1',
-        name: '超级管理员',
-        code: 'SUPER_ADMIN',
-        description: '系统超级管理员，拥有所有权限',
-        sort: 1,
-        status: 1,
-        userCount: 1,
-        createdAt: '2024-01-01 09:00:00',
-        updatedAt: '2024-01-01 09:00:00',
-      },
-      {
-        id: '2',
-        name: '系统管理员',
-        code: 'ADMIN',
-        description: '系统管理员，负责日常系统管理',
-        sort: 2,
-        status: 1,
-        userCount: 3,
-        createdAt: '2024-01-01 09:00:00',
-        updatedAt: '2024-01-01 09:00:00',
-      },
-      {
-        id: '3',
-        name: '普通用户',
-        code: 'USER',
-        description: '普通用户，具有基本访问权限',
-        sort: 3,
-        status: 1,
-        userCount: 10,
-        createdAt: '2024-01-01 09:00:00',
-        updatedAt: '2024-01-01 09:00:00',
-      },
-    ];
+    const params = {
+      page: pagination.page,
+      size: pagination.size,
+      name: searchForm.name || undefined,
+      code: searchForm.code || undefined,
+      status: searchForm.status
+    };
     
-    tableData.value = mockData;
-    pagination.total = mockData.length;
-  } catch (error) {
-    ElMessage.error('获取角色列表失败');
+    const response = await getRoleList(params);
+    if (response.code === 200 && response.data) {
+      tableData.value = (response.data as any).list || [];
+      pagination.total = (response.data as any).total || 0;
+    } else {
+      throw new Error(response.message || '获取角色列表失败');
+    }
+  } catch (error: any) {
+    console.error('获取角色列表失败:', error);
+    ElMessage.error(error.message || '获取角色列表失败');
+    tableData.value = [];
+    pagination.total = 0;
   } finally {
     loading.value = false;
   }
@@ -365,70 +354,32 @@ const fetchRoles = async () => {
 // 获取权限树
 const fetchPermissions = async () => {
   try {
-    // TODO: 调用API获取权限树
-    const mockPermissions: Permission[] = [
-      {
-        id: '1',
-        name: '系统管理',
-        code: 'system',
-        type: 'menu',
-        sort: 1,
-        status: 1,
-        createdAt: '2024-01-01 09:00:00',
-        updatedAt: '2024-01-01 09:00:00',
-        children: [
-          {
-            id: '11',
-            name: '用户管理',
-            code: 'system:user',
-            type: 'menu',
-            parentId: '1',
-            sort: 1,
-            status: 1,
-            createdAt: '2024-01-01 09:00:00',
-            updatedAt: '2024-01-01 09:00:00',
-          },
-          {
-            id: '12',
-            name: '角色管理',
-            code: 'system:role',
-            type: 'menu',
-            parentId: '1',
-            sort: 2,
-            status: 1,
-            createdAt: '2024-01-01 09:00:00',
-            updatedAt: '2024-01-01 09:00:00',
-          },
-        ]
-      },
-      {
-        id: '2',
-        name: '商城管理',
-        code: 'mall',
-        type: 'menu',
-        sort: 2,
-        status: 1,
-        createdAt: '2024-01-01 09:00:00',
-        updatedAt: '2024-01-01 09:00:00',
-        children: [
-          {
-            id: '21',
-            name: '商品管理',
-            code: 'mall:product',
-            type: 'menu',
-            parentId: '2',
-            sort: 1,
-            status: 1,
-            createdAt: '2024-01-01 09:00:00',
-            updatedAt: '2024-01-01 09:00:00',
-          },
-        ]
-      },
-    ];
-    
-    permissionTree.value = mockPermissions;
-  } catch (error) {
+    const response = await getPermissionTree();
+    if (response.code === 200 && response.data) {
+      // 将PermissionTreeNode转换为Permission类型
+      const convertToPermission = (node: any): Permission => ({
+        id: node.id,
+        name: node.name,
+        code: node.code,
+        type: node.type,
+        parentId: node.parentId,
+        path: node.path,
+        component: node.component,
+        icon: node.icon,
+        sort: node.sort || 0,
+        status: node.status,
+        children: node.children ? node.children.map(convertToPermission) : undefined,
+        createdAt: node.createdAt || new Date().toISOString(),
+        updatedAt: node.updatedAt || new Date().toISOString(),
+      });
+      
+      permissionTree.value = response.data.map(convertToPermission);
+    } else {
+      throw new Error(response.message || '获取权限列表失败');
+    }
+  } catch (error: any) {
     console.error('获取权限列表失败:', error);
+    ElMessage.error('获取权限列表失败');
   }
 };
 
@@ -495,13 +446,17 @@ const handleDelete = async (row: Role) => {
       type: 'warning',
     });
 
-    // TODO: 调用API删除角色
-    console.log('删除角色:', row.id);
-    ElMessage.success('删除成功');
-    fetchRoles();
-  } catch (error) {
+    const response = await deleteRole(row.id);
+    if (response.code === 200) {
+      ElMessage.success('删除成功');
+      fetchRoles();
+    } else {
+      throw new Error(response.message || '删除失败');
+    }
+  } catch (error: any) {
     if (error !== 'cancel') {
-      ElMessage.error('删除失败');
+      console.error('删除角色失败:', error);
+      ElMessage.error(error.message || '删除失败');
     }
   }
 };
@@ -516,12 +471,18 @@ const handleToggleStatus = async (row: Role) => {
       type: 'warning',
     });
 
-    // TODO: 调用API切换状态
-    row.status = row.status === 1 ? 0 : 1;
-    ElMessage.success(`${action}成功`);
-  } catch (error) {
+    const newStatus = row.status === 1 ? 0 : 1;
+    const response = await updateRole(row.id, { status: newStatus });
+    if (response.code === 200) {
+      row.status = newStatus;
+      ElMessage.success(`${action}成功`);
+    } else {
+      throw new Error(response.message || `${action}失败`);
+    }
+  } catch (error: any) {
     if (error !== 'cancel') {
-      ElMessage.error(`${action}失败`);
+      console.error('切换状态失败:', error);
+      ElMessage.error(error.message || `${action}失败`);
     }
   }
 };
@@ -530,26 +491,70 @@ const handleToggleStatus = async (row: Role) => {
 const handlePermission = async (row: Role) => {
   currentRole.value = row;
   
-  // TODO: 获取角色的权限
-  checkedPermissions.value = ['1', '11']; // 模拟数据
+  try {
+    // 获取角色的权限ID列表
+    const response = await getRolePermissionIds(row.id);
+    if (response.code === 200 && response.data) {
+      checkedPermissions.value = response.data;
+    } else {
+      checkedPermissions.value = [];
+    }
+  } catch (error: any) {
+    console.error('获取角色权限失败:', error);
+    checkedPermissions.value = [];
+  }
   
   permissionDialogVisible.value = true;
 };
 
 // 权限树操作
 const expandAllPermissions = () => {
-  // TODO: 展开所有权限节点
-  ElMessage.success('已展开所有权限');
+  if (permissionTreeRef.value) {
+    // 递归展开所有权限节点
+    const expandNode = (data: Permission[]) => {
+      data.forEach(item => {
+        permissionTreeRef.value.store.nodesMap[item.id]?.expand();
+        if (item.children && item.children.length > 0) {
+          expandNode(item.children);
+        }
+      });
+    };
+    expandNode(permissionTree.value);
+    ElMessage.success('已展开所有权限');
+  }
 };
 
 const collapseAllPermissions = () => {
-  // TODO: 折叠所有权限节点
-  ElMessage.success('已折叠所有权限');
+  if (permissionTreeRef.value) {
+    // 递归折叠所有权限节点
+    const collapseNode = (data: Permission[]) => {
+      data.forEach(item => {
+        permissionTreeRef.value.store.nodesMap[item.id]?.collapse();
+        if (item.children && item.children.length > 0) {
+          collapseNode(item.children);
+        }
+      });
+    };
+    collapseNode(permissionTree.value);
+    ElMessage.success('已折叠所有权限');
+  }
 };
 
 const checkAllPermissions = () => {
   if (permissionTreeRef.value) {
-    permissionTreeRef.value.setCheckedNodes(permissionTree.value);
+    // 获取所有权限ID
+    const getAllPermissionIds = (data: Permission[]): string[] => {
+      const ids: string[] = [];
+      data.forEach(item => {
+        ids.push(item.id);
+        if (item.children && item.children.length > 0) {
+          ids.push(...getAllPermissionIds(item.children));
+        }
+      });
+      return ids;
+    };
+    const allIds = getAllPermissionIds(permissionTree.value);
+    permissionTreeRef.value.setCheckedKeys(allIds);
   }
 };
 
@@ -570,13 +575,20 @@ const handleSavePermissions = async () => {
     const halfCheckedKeys = permissionTreeRef.value.getHalfCheckedKeys();
     const allCheckedKeys = [...checkedKeys, ...halfCheckedKeys];
     
-    // TODO: 调用API保存权限
-    console.log('保存权限:', allCheckedKeys);
+    // 调用API保存权限
+    const response = await updateRole(currentRole.value.id, { 
+      permissionIds: allCheckedKeys 
+    });
     
-    ElMessage.success('权限保存成功');
-    permissionDialogVisible.value = false;
-  } catch (error) {
-    ElMessage.error('权限保存失败');
+    if (response.code === 200) {
+      ElMessage.success('权限保存成功');
+      permissionDialogVisible.value = false;
+    } else {
+      throw new Error(response.message || '权限保存失败');
+    }
+  } catch (error: any) {
+    console.error('保存权限失败:', error);
+    ElMessage.error(error.message || '权限保存失败');
   } finally {
     permissionLoading.value = false;
   }
@@ -590,14 +602,35 @@ const handleSubmit = async () => {
     await formRef.value.validate();
     submitLoading.value = true;
 
-    // TODO: 调用API提交表单
-    const action = isEdit.value ? '更新' : '创建';
-    ElMessage.success(`${action}成功`);
-    
-    dialogVisible.value = false;
-    fetchRoles();
-  } catch (error) {
-    console.error('表单验证失败:', error);
+    const submitData = {
+      name: formData.name,
+      code: formData.code,
+      description: formData.description,
+      sort: formData.sort,
+      status: formData.status,
+      permissionIds: [] // 创建时暂时不分配权限，后续通过权限分配功能进行
+    };
+
+    let response;
+    if (isEdit.value) {
+      // 编辑时不修改权限，权限通过专门的权限分配功能修改
+      const { permissionIds, ...updateData } = submitData;
+      response = await updateRole(formData.id, updateData);
+    } else {
+      response = await createRole(submitData);
+    }
+
+    if (response.code === 200) {
+      const action = isEdit.value ? '更新' : '创建';
+      ElMessage.success(`${action}成功`);
+      dialogVisible.value = false;
+      fetchRoles();
+    } else {
+      throw new Error(response.message || '操作失败');
+    }
+  } catch (error: any) {
+    console.error('提交表单失败:', error);
+    ElMessage.error(error.message || '操作失败');
   } finally {
     submitLoading.value = false;
   }

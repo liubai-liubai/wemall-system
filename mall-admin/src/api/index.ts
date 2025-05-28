@@ -7,6 +7,9 @@
 // 认证相关
 export * from './auth';
 
+// 仪表盘相关
+export * from './dashboard';
+
 // 管理员用户相关
 export * from './admin-user';
 

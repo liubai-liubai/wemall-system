@@ -122,7 +122,7 @@ const loginFormRef = ref<FormInstance>();
 // 登录表单
 const loginForm = reactive({
   username: 'admin',
-  password: '123456',
+  password: 'password',
   remember: false,
 });
 

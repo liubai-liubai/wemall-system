@@ -283,6 +283,17 @@ import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'elem
 import { Plus, Search, Refresh } from '@element-plus/icons-vue';
 import { formatDateTime } from '@/utils';
 import type { AdminUser, Department, Role } from '@/types';
+// 导入API接口
+import { 
+  getAdminUserList, 
+  createAdminUser, 
+  updateAdminUser, 
+  deleteAdminUser, 
+  resetAdminUserPassword,
+  toggleAdminUserStatus 
+} from '@/api/admin-user';
+import { getDepartmentTree } from '@/api/department';
+import { getAllRoles } from '@/api/role';
 
 // 响应式数据
 const loading = ref(false);
@@ -362,36 +373,27 @@ const formRules: FormRules = {
 const fetchUsers = async () => {
   loading.value = true;
   try {
-    // TODO: 调用API获取用户列表
-    const mockData: AdminUser[] = [
-      {
-        id: '1',
-        username: 'admin',
-        realName: '系统管理员',
-        email: 'admin@example.com',
-        phone: '13800138000',
-        departmentId: '1',
-        departmentName: '技术部',
-        roles: [{ 
-          id: '1', 
-          name: '超级管理员',
-          code: 'SUPER_ADMIN',
-          sort: 1,
-          status: 1,
-          createdAt: '2024-01-01 09:00:00',
-          updatedAt: '2024-01-01 09:00:00'
-        }],
-        status: 1,
-        lastLoginTime: '2024-01-15 10:30:00',
-        createdAt: '2024-01-01 09:00:00',
-        updatedAt: '2024-01-15 10:30:00',
-      },
-    ];
+    const params = {
+      page: pagination.page,
+      size: pagination.size,
+      username: searchForm.username || undefined,
+      realName: searchForm.realName || undefined,
+      departmentId: searchForm.departmentId || undefined,
+      status: searchForm.status
+    };
     
-    tableData.value = mockData;
-    pagination.total = mockData.length;
-  } catch (error) {
-    ElMessage.error('获取用户列表失败');
+    const response = await getAdminUserList(params);
+    if (response.code === 200 && response.data) {
+      tableData.value = response.data.list || [];
+      pagination.total = response.data.total || 0;
+    } else {
+      throw new Error(response.message || '获取用户列表失败');
+    }
+  } catch (error: any) {
+    console.error('获取用户列表失败:', error);
+    ElMessage.error(error.message || '获取用户列表失败');
+    tableData.value = [];
+    pagination.total = 0;
   } finally {
     loading.value = false;
   }
@@ -400,76 +402,37 @@ const fetchUsers = async () => {
 // 获取部门选项
 const fetchDepartments = async () => {
   try {
-    // TODO: 调用API获取部门列表
-    departmentOptions.value = [
-      { 
-        id: '1', 
-        name: '技术部',
-        code: 'TECH',
-        sort: 1,
-        status: 1,
-        createdAt: '2024-01-01 09:00:00',
-        updatedAt: '2024-01-01 09:00:00'
-      },
-      { 
-        id: '2', 
-        name: '产品部',
-        code: 'PRODUCT',
-        sort: 2,
-        status: 1,
-        createdAt: '2024-01-01 09:00:00',
-        updatedAt: '2024-01-01 09:00:00'
-      },
-      { 
-        id: '3', 
-        name: '运营部',
-        code: 'OPERATION',
-        sort: 3,
-        status: 1,
-        createdAt: '2024-01-01 09:00:00',
-        updatedAt: '2024-01-01 09:00:00'
-      },
-    ];
-  } catch (error) {
+    const response = await getDepartmentTree();
+    if (response.code === 200 && response.data) {
+      // 将树形结构扁平化为选项列表
+      const flattenDepartments = (departments: Department[]): Department[] => {
+        const result: Department[] = [];
+        departments.forEach(dept => {
+          result.push(dept);
+          if (dept.children && dept.children.length > 0) {
+            result.push(...flattenDepartments(dept.children));
+          }
+        });
+        return result;
+      };
+      departmentOptions.value = flattenDepartments(response.data);
+    }
+  } catch (error: any) {
     console.error('获取部门列表失败:', error);
+    ElMessage.error('获取部门列表失败');
   }
 };
 
 // 获取角色选项
 const fetchRoles = async () => {
   try {
-    // TODO: 调用API获取角色列表
-    roleOptions.value = [
-      { 
-        id: '1', 
-        name: '超级管理员',
-        code: 'SUPER_ADMIN',
-        sort: 1,
-        status: 1,
-        createdAt: '2024-01-01 09:00:00',
-        updatedAt: '2024-01-01 09:00:00'
-      },
-      { 
-        id: '2', 
-        name: '系统管理员',
-        code: 'ADMIN',
-        sort: 2,
-        status: 1,
-        createdAt: '2024-01-01 09:00:00',
-        updatedAt: '2024-01-01 09:00:00'
-      },
-      { 
-        id: '3', 
-        name: '普通用户',
-        code: 'USER',
-        sort: 3,
-        status: 1,
-        createdAt: '2024-01-01 09:00:00',
-        updatedAt: '2024-01-01 09:00:00'
-      },
-    ];
-  } catch (error) {
+    const response = await getAllRoles();
+    if (response.code === 200 && response.data) {
+      roleOptions.value = response.data;
+    }
+  } catch (error: any) {
     console.error('获取角色列表失败:', error);
+    ElMessage.error('获取角色列表失败');
   }
 };
 
@@ -541,13 +504,17 @@ const handleDelete = async (row: AdminUser) => {
       type: 'warning',
     });
 
-    // TODO: 调用API删除用户
-    console.log('删除用户:', row.id);
-    ElMessage.success('删除成功');
-    fetchUsers();
-  } catch (error) {
+    const response = await deleteAdminUser(row.id);
+    if (response.code === 200) {
+      ElMessage.success('删除成功');
+      fetchUsers();
+    } else {
+      throw new Error(response.message || '删除失败');
+    }
+  } catch (error: any) {
     if (error !== 'cancel') {
-      ElMessage.error('删除失败');
+      console.error('删除用户失败:', error);
+      ElMessage.error(error.message || '删除失败');
     }
   }
 };
@@ -562,12 +529,18 @@ const handleToggleStatus = async (row: AdminUser) => {
       type: 'warning',
     });
 
-    // TODO: 调用API切换状态
-    row.status = row.status === 1 ? 0 : 1;
-    ElMessage.success(`${action}成功`);
-  } catch (error) {
+    const newStatus = row.status === 1 ? 0 : 1;
+    const response = await toggleAdminUserStatus(row.id, newStatus);
+    if (response.code === 200) {
+      row.status = newStatus;
+      ElMessage.success(`${action}成功`);
+    } else {
+      throw new Error(response.message || `${action}失败`);
+    }
+  } catch (error: any) {
     if (error !== 'cancel') {
-      ElMessage.error(`${action}失败`);
+      console.error('切换状态失败:', error);
+      ElMessage.error(error.message || `${action}失败`);
     }
   }
 };
@@ -581,12 +554,16 @@ const handleResetPassword = async (row: AdminUser) => {
       type: 'warning',
     });
 
-    // TODO: 调用API重置密码
-    console.log('重置密码:', row.id);
-    ElMessage.success('密码重置成功，新密码为：123456');
-  } catch (error) {
+    const response = await resetAdminUserPassword(row.id, '123456');
+    if (response.code === 200) {
+      ElMessage.success('密码重置成功，新密码为：123456');
+    } else {
+      throw new Error(response.message || '密码重置失败');
+    }
+  } catch (error: any) {
     if (error !== 'cancel') {
-      ElMessage.error('密码重置失败');
+      console.error('重置密码失败:', error);
+      ElMessage.error(error.message || '密码重置失败');
     }
   }
 };
@@ -599,14 +576,36 @@ const handleSubmit = async () => {
     await formRef.value.validate();
     submitLoading.value = true;
 
-    // TODO: 调用API提交表单
-    const action = isEdit.value ? '更新' : '创建';
-    ElMessage.success(`${action}成功`);
-    
-    dialogVisible.value = false;
-    fetchUsers();
-  } catch (error) {
-    console.error('表单验证失败:', error);
+    const submitData = {
+      username: formData.username,
+      realName: formData.realName,
+      email: formData.email,
+      phone: formData.phone,
+      departmentId: formData.departmentId,
+      roleIds: formData.roleIds,
+      status: formData.status,
+      remark: formData.remark,
+      ...(isEdit.value ? {} : { password: formData.password })
+    };
+
+    let response;
+    if (isEdit.value) {
+      response = await updateAdminUser(formData.id, submitData);
+    } else {
+      response = await createAdminUser(submitData);
+    }
+
+    if (response.code === 200) {
+      const action = isEdit.value ? '更新' : '创建';
+      ElMessage.success(`${action}成功`);
+      dialogVisible.value = false;
+      fetchUsers();
+    } else {
+      throw new Error(response.message || '操作失败');
+    }
+  } catch (error: any) {
+    console.error('提交表单失败:', error);
+    ElMessage.error(error.message || '操作失败');
   } finally {
     submitLoading.value = false;
   }
