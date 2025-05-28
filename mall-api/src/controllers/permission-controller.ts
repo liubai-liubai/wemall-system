@@ -60,7 +60,18 @@ export class PermissionController {
         status: ctx.query.status ? Number(ctx.query.status) : undefined,
       };
 
-      const result = await permissionService.getPermissionTree(params);
+      const treeNodes = await permissionService.getPermissionTree(params);
+      
+      // 将PermissionTreeNode转换为前端期望的Permission格式
+      const convertTreeNodeToPermission = (node: any): any => {
+        return {
+          ...node.permission,
+          children: node.children ? node.children.map(convertTreeNodeToPermission) : undefined
+        };
+      };
+      
+      const result = treeNodes.map(convertTreeNodeToPermission);
+      
       ctx.body = success(result, '获取权限树成功');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '获取权限树失败';
