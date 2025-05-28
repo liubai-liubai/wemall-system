@@ -96,24 +96,27 @@
             {{ formatDateTime(row.createdAt) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180" fixed="right">
+        <el-table-column label="操作" width="260" fixed="right">
           <template #default="{ row }">
-            <el-button type="primary" link @click="handleEdit(row)">
-              编辑
-            </el-button>
-            <el-button type="success" link @click="handleAddChild(row)">
-              添加子部门
-            </el-button>
-            <el-button
-              :type="row.status === 1 ? 'danger' : 'success'"
-              link
-              @click="handleToggleStatus(row)"
-            >
-              {{ row.status === 1 ? '禁用' : '启用' }}
-            </el-button>
-            <el-button type="danger" link @click="handleDelete(row)">
-              删除
-            </el-button>
+            <div class="action-buttons">
+              <el-button type="primary" link size="small" @click="handleEdit(row)">
+                编辑
+              </el-button>
+              <el-button type="success" link size="small" @click="handleAddChild(row)">
+                添加子部门
+              </el-button>
+              <el-button
+                :type="row.status === 1 ? 'danger' : 'success'"
+                link
+                size="small"
+                @click="handleToggleStatus(row)"
+              >
+                {{ row.status === 1 ? '禁用' : '启用' }}
+              </el-button>
+              <el-button type="danger" link size="small" @click="handleDelete(row)">
+                删除
+              </el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -685,5 +688,31 @@ onMounted(() => {
 
 .dialog-footer {
   text-align: right;
+}
+
+.action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: nowrap;
+  min-width: 240px;
+  
+  .el-button {
+    padding: 2px 6px;
+    font-size: 12px;
+    height: auto;
+    min-height: 22px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    
+    &.el-button--small {
+      padding: 2px 6px;
+    }
+    
+    // 进一步减少内边距
+    &.el-button--text.is-link {
+      padding: 2px 6px;
+    }
+  }
 }
 </style> 

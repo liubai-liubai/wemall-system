@@ -133,24 +133,27 @@
             {{ formatDateTime(row.createdAt) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column label="操作" width="260" fixed="right">
           <template #default="{ row }">
-            <el-button type="primary" link @click="handleEdit(row)">
-              编辑
-            </el-button>
-            <el-button type="success" link @click="handleAddChild(row)">
-              添加子权限
-            </el-button>
-            <el-button
-              :type="row.status === 1 ? 'danger' : 'success'"
-              link
-              @click="handleToggleStatus(row)"
-            >
-              {{ row.status === 1 ? '禁用' : '启用' }}
-            </el-button>
-            <el-button type="danger" link @click="handleDelete(row)">
-              删除
-            </el-button>
+            <div class="action-buttons">
+              <el-button type="primary" link size="small" @click="handleEdit(row)">
+                编辑
+              </el-button>
+              <el-button type="success" link size="small" @click="handleAddChild(row)">
+                添加子权限
+              </el-button>
+              <el-button
+                :type="row.status === 1 ? 'danger' : 'success'"
+                link
+                size="small"
+                @click="handleToggleStatus(row)"
+              >
+                {{ row.status === 1 ? '禁用' : '启用' }}
+              </el-button>
+              <el-button type="danger" link size="small" @click="handleDelete(row)">
+                删除
+              </el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -839,6 +842,65 @@ onMounted(() => {
   .permission-icon {
     margin-right: 8px;
     color: #666;
+    flex-shrink: 0;
+  }
+}
+
+// 修复树形表格中权限名称列的对齐问题
+:deep(.el-table) {
+  .el-table__body {
+    .el-table__row {
+      .el-table__cell {
+        // 针对权限名称列进行样式调整
+        &:nth-child(2) {
+          .cell {
+            display: flex;
+            align-items: center;
+            
+            // 展开/折叠按钮样式调整
+            .el-table__expand-icon {
+              margin-right: 8px;
+              flex-shrink: 0;
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              vertical-align: middle;
+            }
+            
+            // 权限名称内容样式调整
+            .permission-name {
+              display: inline-flex;
+              align-items: center;
+              flex: 1;
+              min-height: 32px; // 确保有足够的高度
+              
+              .permission-icon {
+                margin-right: 8px;
+                color: #666;
+                flex-shrink: 0;
+                display: inline-flex;
+                align-items: center;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// 额外的树形表格样式优化
+:deep(.el-table__expand-icon) {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  margin-right: 8px;
+  
+  &.el-table__expand-icon--expanded {
+    transform: rotate(90deg);
   }
 }
 
@@ -850,5 +912,31 @@ onMounted(() => {
 
 .dialog-footer {
   text-align: right;
+}
+
+.action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: nowrap;
+  min-width: 240px;
+  
+  .el-button {
+    padding: 2px 6px;
+    font-size: 12px;
+    height: auto;
+    min-height: 22px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    
+    &.el-button--small {
+      padding: 2px 6px;
+    }
+    
+    // 进一步减少内边距
+    &.el-button--text.is-link {
+      padding: 2px 6px;
+    }
+  }
 }
 </style> 
