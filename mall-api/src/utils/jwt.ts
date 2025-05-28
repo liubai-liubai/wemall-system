@@ -25,26 +25,22 @@ export class JwtUtils {
   /**
    * 生成访问令牌
    * @param payload 载荷数据
-   * @param expiresIn 过期时间
+   * @param expiresIn 过期时间 (例如: '24h', '7d', '1h')
    * @returns JWT令牌
    */
-  generateToken(payload: Omit<IJwtPayload, 'iat' | 'exp'>, expiresIn?: string | number): string {
-    const options: jwt.SignOptions = {
-      expiresIn: expiresIn || JWT_EXPIRES_IN,
-    };
+  generateToken(payload: Omit<IJwtPayload, 'iat' | 'exp'>, expiresIn: string = JWT_EXPIRES_IN): string {
+    const options = { expiresIn };
     return jwt.sign(payload, JWT_SECRET, options);
   }
 
   /**
    * 生成刷新令牌
    * @param payload 载荷数据
-   * @param expiresIn 过期时间
+   * @param expiresIn 过期时间 (例如: '7d', '30d', '1h')
    * @returns 刷新令牌
    */
-  generateRefreshToken(payload: Omit<IJwtPayload, 'iat' | 'exp'>, expiresIn?: string | number): string {
-    const options: jwt.SignOptions = {
-      expiresIn: expiresIn || JWT_REFRESH_EXPIRES_IN,
-    };
+  generateRefreshToken(payload: Omit<IJwtPayload, 'iat' | 'exp'>, expiresIn: string = JWT_REFRESH_EXPIRES_IN): string {
+    const options = { expiresIn };
     return jwt.sign(payload, JWT_REFRESH_SECRET, options);
   }
 

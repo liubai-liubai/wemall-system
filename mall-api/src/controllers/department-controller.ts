@@ -46,7 +46,18 @@ export class DepartmentController {
         status: ctx.query.status ? Number(ctx.query.status) : undefined,
       };
 
-      const result = await departmentService.getDepartmentTree(params);
+      const treeNodes = await departmentService.getDepartmentTree(params);
+      
+      // 将DepartmentTreeNode转换为前端期望的Department格式
+      const convertTreeNodeToDepartment = (node: any): any => {
+        return {
+          ...node.department,
+          children: node.children ? node.children.map(convertTreeNodeToDepartment) : undefined
+        };
+      };
+      
+      const result = treeNodes.map(convertTreeNodeToDepartment);
+      
       ctx.body = success(result, '获取部门树成功');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '获取部门树失败';

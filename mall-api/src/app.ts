@@ -19,10 +19,37 @@ const app = new Koa();
 
 /**
  * 配置基础中间件
+ * @author 刘白 & AI Assistant
  */
 const setupMiddleware = (): void => {
-  // 跨域支持
-  app.use(cors());
+  // 跨域支持 - 配置详细的CORS选项
+  app.use(cors({
+    origin: (ctx) => {
+      // 允许的域名列表
+      const allowedOrigins = [
+        'http://localhost:5173',  // Vite开发服务器
+        'http://localhost:3000',  // 本地开发
+        'http://127.0.0.1:5173',  // 本地IP
+        'http://127.0.0.1:3000'   // 本地IP
+      ];
+      
+      const requestOrigin = ctx.headers.origin;
+      if (!requestOrigin) {
+        return '*';
+      }
+      
+      if (allowedOrigins.includes(requestOrigin)) {
+        return requestOrigin;
+      }
+      
+      // 如果不在允许列表中，返回第一个允许的域名
+      return allowedOrigins[0];
+    },
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Requested-With'],
+    credentials: true,
+    maxAge: 86400 // 24小时
+  }));
   
   // 请求体解析
   app.use(bodyParser());
@@ -83,19 +110,18 @@ const databaseTestHandler = async (ctx: Koa.Context, next: Koa.Next): Promise<vo
 };
 
 /**
- * 404处理中间件
- */
-const notFoundHandler = async (ctx: Koa.Context): Promise<void> => {
-  ctx.body = error('接口不存在', 404);
-};
-
-/**
  * 设置路由处理器
  */
 const setupRoutes = (): void => {
   app.use(healthCheckHandler);
   app.use(databaseTestHandler);
-  app.use(notFoundHandler);
+};
+
+/**
+ * 404处理中间件
+ */
+const notFoundHandler = async (ctx: Koa.Context): Promise<void> => {
+  ctx.body = error('接口不存在', 404);
 };
 
 /**
@@ -109,17 +135,32 @@ const initializeApp = async (): Promise<void> => {
     // 2. 先配置基础中间件（包括bodyParser和Swagger）
     setupMiddleware();
     
-    // 3. 注册主路由（这样路由就能使用bodyParser解析的数据）
+    // 3. 设置健康检查等路由
+    setupRoutes();
+    
+    // 4. 注册主路由（这样路由就能使用bodyParser解析的数据）
     app.use(mainRouter.routes());
     app.use(mainRouter.allowedMethods());
     
-    // 4. 设置其他路由（健康检查等）
-    setupRoutes();
+    // 添加调试日志
+    logger.info('主路由已注册，包含以下路由:');
+    logger.info('- /api/v1/dashboard/stats');
+    logger.info('- /api/v1/dashboard/system-info');
+    logger.info('- /api/v1/dashboard/recent-activities');
     
-    // 5. 启动服务器
+    // 输出实际的路由堆栈用于调试
+    logger.info('Router stack 详细信息:');
+    mainRouter.stack.forEach((layer: any, index: number) => {
+      logger.info(`Route ${index + 1}: ${layer.path || 'unknown'} - Methods: ${JSON.stringify(layer.methods)}`);
+    });
+    
+    // 5. 最后注册404处理器
+    app.use(notFoundHandler);
+    
+    // 6. 启动服务器
     startServer();
     
-    // 6. 设置优雅关闭
+    // 7. 设置优雅关闭
     setupGracefulShutdown();
     
   } catch (err) {

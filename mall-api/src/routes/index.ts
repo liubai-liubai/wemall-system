@@ -8,6 +8,7 @@
 import Router from '@koa/router';
 import healthRoutes from './health.js';
 import authRoutes from './auth.js';
+import dashboardRoutes from './dashboard.js';
 import permissionRoutes from './permissions.js';
 import roleRoutes from './roles.js';
 import departmentRoutes from './departments.js';
@@ -30,6 +31,12 @@ router.use(`${API_PREFIX}/health`, healthRoutes.routes(), healthRoutes.allowedMe
  * 处理用户登录、注册、令牌管理等认证相关功能
  */
 router.use(`${API_PREFIX}/auth`, authRoutes.routes(), authRoutes.allowedMethods());
+
+/**
+ * 注册仪表盘路由
+ * 提供系统统计数据和监控信息
+ */
+router.use(`${API_PREFIX}/dashboard`, dashboardRoutes.routes(), dashboardRoutes.allowedMethods());
 
 /**
  * 注册系统管理模块路由
