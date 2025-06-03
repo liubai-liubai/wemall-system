@@ -17,6 +17,7 @@ import memberLevelRoutes from './member-levels.js';
 import userMemberRoutes from './user-members.js';
 import memberPointRoutes from './member-points.js';
 import userAddressRoutes from './user-addresses.js';
+import productCategoryRoutes from './product-categories.js';
 
 // 创建主路由实例
 const router = new Router();
@@ -60,6 +61,9 @@ router.use(memberPointRoutes.routes(), memberPointRoutes.allowedMethods());
 
 // 用户地址管理模块
 router.use(userAddressRoutes.routes(), userAddressRoutes.allowedMethods());
+
+// 商品管理模块
+router.use(productCategoryRoutes.routes(), productCategoryRoutes.allowedMethods());
 
 // TODO: 后续添加其他商城模块路由
 // router.use(`${API_PREFIX}/products`, productRoutes.routes(), productRoutes.allowedMethods());
