@@ -111,3 +111,102 @@ export interface IUserQueryParams {
   endDate?: string;       // 注册结束日期
   gender?: UserGender;
 }
+
+// 用户地址接口
+export interface IUserAddress {
+  id: string;
+  userId: string;
+  receiverName: string;
+  receiverPhone: string;
+  province: string;
+  city: string;
+  district: string;
+  detailAddress: string;
+  postalCode?: string;
+  isDefault: boolean;
+  label?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  // 关联数据
+  user?: IUserInfo;
+}
+
+// 创建用户地址请求
+export interface CreateUserAddressRequest {
+  receiverName: string;
+  receiverPhone: string;
+  province: string;
+  city: string;
+  district: string;
+  detailAddress: string;
+  postalCode?: string;
+  isDefault?: boolean;
+  label?: string;
+}
+
+// 更新用户地址请求
+export interface UpdateUserAddressRequest {
+  receiverName?: string;
+  receiverPhone?: string;
+  province?: string;
+  city?: string;
+  district?: string;
+  detailAddress?: string;
+  postalCode?: string;
+  isDefault?: boolean;
+  label?: string;
+}
+
+// 用户地址查询参数
+export interface UserAddressQueryParams {
+  userId?: string;
+  province?: string;
+  city?: string;
+  district?: string;
+  isDefault?: boolean;
+  label?: string;
+  page?: number;
+  size?: number;
+  sortBy?: 'created_at' | 'updated_at' | 'receiver_name';
+  sortOrder?: 'asc' | 'desc';
+}
+
+// 用户地址列表响应
+export interface UserAddressListResponse {
+  list: IUserAddress[];
+  total: number;
+  page: number;
+  size: number;
+  pages: number;
+}
+
+// 地址统计信息
+export interface AddressStatistics {
+  totalAddresses: number;
+  defaultAddresses: number;
+  provinceStats: Array<{
+    province: string;
+    count: number;
+  }>;
+  labelStats: Array<{
+    label: string;
+    count: number;
+  }>;
+}
+
+// 设置默认地址请求
+export interface SetDefaultAddressRequest {
+  addressId: string;
+}
+
+// 地址验证结果
+export interface AddressValidationResult {
+  isValid: boolean;
+  errors: string[];
+  normalizedAddress?: {
+    province: string;
+    city: string;
+    district: string;
+    detailAddress: string;
+  };
+}

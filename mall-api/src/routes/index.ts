@@ -13,6 +13,10 @@ import permissionRoutes from './permissions.js';
 import roleRoutes from './roles.js';
 import departmentRoutes from './departments.js';
 import adminUserRoutes from './admin-users.js';
+import memberLevelRoutes from './member-levels.js';
+import userMemberRoutes from './user-members.js';
+import memberPointRoutes from './member-points.js';
+import userAddressRoutes from './user-addresses.js';
 
 // 创建主路由实例
 const router = new Router();
@@ -46,8 +50,18 @@ router.use(`${API_PREFIX}/roles`, roleRoutes.routes(), roleRoutes.allowedMethods
 router.use(`${API_PREFIX}/departments`, departmentRoutes.routes(), departmentRoutes.allowedMethods());
 router.use(`${API_PREFIX}/admin-users`, adminUserRoutes.routes(), adminUserRoutes.allowedMethods());
 
-// TODO: 后续添加其他模块路由
-// router.use(`${API_PREFIX}/users`, userRoutes.routes(), userRoutes.allowedMethods());
+/**
+ * 注册商城模块路由
+ */
+// 会员管理模块
+router.use(memberLevelRoutes.routes(), memberLevelRoutes.allowedMethods());
+router.use(userMemberRoutes.routes(), userMemberRoutes.allowedMethods());
+router.use(memberPointRoutes.routes(), memberPointRoutes.allowedMethods());
+
+// 用户地址管理模块
+router.use(userAddressRoutes.routes(), userAddressRoutes.allowedMethods());
+
+// TODO: 后续添加其他商城模块路由
 // router.use(`${API_PREFIX}/products`, productRoutes.routes(), productRoutes.allowedMethods());
 // router.use(`${API_PREFIX}/orders`, orderRoutes.routes(), orderRoutes.allowedMethods());
 
