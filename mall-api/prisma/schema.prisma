@@ -30,6 +30,7 @@ model User {
 
   // 关联关系
   refresh_tokens RefreshToken[]  // 用户的刷新令牌
+  user_members UserMember[]      // 用户的会员信息
 
   // 索引规范：uk_前缀唯一索引，idx_前缀普通索引
   @@unique([open_id], map: "uk_users_open_id")
@@ -338,4 +339,527 @@ model ErrorCode {
   @@index([module], map: "idx_error_codes_module")
   @@index([level], map: "idx_error_codes_level")
   @@map("error_codes")
+}
+
+// ================================
+// 商城功能模块表结构（会员、商品、订单、支付、营销）
+// 设计：刘白 & AI Assistant 2024
+// ================================
+
+/// 会员等级表
+/// 说明：定义会员等级体系，支持不同等级享受不同权益
+model MemberLevel {
+  id           String   @id @default(uuid()) @map("id") @db.VarChar(36)
+  name         String   @map("name") @db.VarChar(50)         // 等级名称
+  description  String?  @map("description") @db.VarChar(255) // 等级描述
+  growth_min   Int      @map("growth_min")                   // 成长值下限
+  growth_max   Int      @map("growth_max")                   // 成长值上限
+  privileges   Json?    @map("privileges")                   // 等级特权（JSON）
+  status       Int      @default(1) @map("status")           // 1:启用 0:禁用
+  created_at   DateTime @default(now()) @map("created_at")
+  updated_at   DateTime @updatedAt @map("updated_at")
+
+  user_members UserMember[]
+
+  @@unique([name], map: "uk_member_levels_name")
+  @@index([status], map: "idx_member_levels_status")
+  @@map("member_levels")
+}
+
+/// 用户会员信息表
+/// 说明：扩展用户表，存储会员相关信息
+model UserMember {
+  id           String      @id @default(uuid()) @map("id") @db.VarChar(36)
+  user_id      String      @unique @map("user_id") @db.VarChar(36)
+  level_id     String      @map("level_id") @db.VarChar(36)
+  growth       Int         @default(0) @map("growth")         // 成长值
+  points       Int         @default(0) @map("points")         // 当前积分
+  inviter_id   String?     @map("inviter_id") @db.VarChar(36) // 邀请人
+  status       Int         @default(1) @map("status")         // 1:正常 0:禁用
+  created_at   DateTime    @default(now()) @map("created_at")
+  updated_at   DateTime    @updatedAt @map("updated_at")
+
+  level        MemberLevel @relation(fields: [level_id], references: [id])
+  user         User        @relation(fields: [user_id], references: [id])
+  points_logs  MemberPoint[]
+  addresses    UserAddress[]
+
+  @@index([level_id], map: "idx_user_members_level_id")
+  @@index([inviter_id], map: "idx_user_members_inviter_id")
+  @@map("user_members")
+}
+
+/// 积分记录表
+/// 说明：记录用户积分变动历史
+model MemberPoint {
+  id           String   @id @default(uuid()) @map("id") @db.VarChar(36)
+  user_member_id String @map("user_member_id") @db.VarChar(36)
+  change        Int     @map("change")                  // 变动积分
+  type          String  @map("type") @db.VarChar(30)    // 类型：earn/consume/adjust
+  remark        String? @map("remark") @db.VarChar(255) // 备注
+  created_at    DateTime @default(now()) @map("created_at")
+
+  user_member   UserMember @relation(fields: [user_member_id], references: [id])
+
+  @@index([user_member_id], map: "idx_member_points_user_member_id")
+  @@map("member_points")
+}
+
+/// 用户收货地址表
+/// 说明：用户收货地址管理
+model UserAddress {
+  id           String   @id @default(uuid()) @map("id") @db.VarChar(36)
+  user_member_id String @map("user_member_id") @db.VarChar(36)
+  consignee     String  @map("consignee") @db.VarChar(50)      // 收货人
+  phone         String  @map("phone") @db.VarChar(20)
+  province      String  @map("province") @db.VarChar(50)
+  city          String  @map("city") @db.VarChar(50)
+  district      String  @map("district") @db.VarChar(50)
+  address       String  @map("address") @db.VarChar(255)
+  is_default    Int     @default(0) @map("is_default")          // 1:默认 0:否
+  status        Int     @default(1) @map("status")
+  created_at    DateTime @default(now()) @map("created_at")
+  updated_at    DateTime @updatedAt @map("updated_at")
+
+  user_member   UserMember @relation(fields: [user_member_id], references: [id])
+
+  @@index([user_member_id], map: "idx_user_addresses_user_member_id")
+  @@map("user_addresses")
+}
+
+// ================================
+// 商品管理模块
+// ================================
+
+/// 商品分类表
+/// 说明：商品分类管理，支持多级分类
+model ProductCategory {
+  id           String   @id @default(uuid()) @map("id") @db.VarChar(36)
+  name         String   @map("name") @db.VarChar(50)
+  parent_id    String?  @map("parent_id") @db.VarChar(36)
+  level        Int      @default(1) @map("level")              // 分类层级
+  sort         Int      @default(0) @map("sort")
+  status       Int      @default(1) @map("status")
+  created_at   DateTime @default(now()) @map("created_at")
+  updated_at   DateTime @updatedAt @map("updated_at")
+
+  parent       ProductCategory? @relation("CategoryToParent", fields: [parent_id], references: [id])
+  children     ProductCategory[] @relation("CategoryToParent")
+  products     Product[]
+
+  @@unique([name, parent_id], map: "uk_product_categories_name_parent")
+  @@index([parent_id], map: "idx_product_categories_parent_id")
+  @@map("product_categories")
+}
+
+/// 商品表
+/// 说明：商品基础信息
+model Product {
+  id           String   @id @default(uuid()) @map("id") @db.VarChar(36)
+  name         String   @map("name") @db.VarChar(100)
+  category_id  String   @map("category_id") @db.VarChar(36)
+  brand        String?  @map("brand") @db.VarChar(50)
+  description  String?  @map("description") @db.Text
+  main_image   String?  @map("main_image") @db.VarChar(255)
+  price        Decimal  @map("price") @db.Decimal(10,2)
+  market_price Decimal  @map("market_price") @db.Decimal(10,2)
+  status       Int      @default(1) @map("status")             // 1:上架 0:下架
+  stock        Int      @default(0) @map("stock")
+  sales        Int      @default(0) @map("sales")
+  sort         Int      @default(0) @map("sort")
+  created_at   DateTime @default(now()) @map("created_at")
+  updated_at   DateTime @updatedAt @map("updated_at")
+
+  category     ProductCategory @relation(fields: [category_id], references: [id])
+  skus         ProductSku[]
+  attributes   ProductAttribute[]
+  images       ProductImage[]
+  product_stocks ProductStock[] // 商品的库存记录
+
+  @@index([category_id], map: "idx_products_category_id")
+  @@index([status], map: "idx_products_status")
+  @@map("products")
+}
+
+/// 商品SKU表
+/// 说明：商品SKU管理，支持多规格
+model ProductSku {
+  id           String   @id @default(uuid()) @map("id") @db.VarChar(36)
+  product_id   String   @map("product_id") @db.VarChar(36)
+  sku_code     String   @map("sku_code") @db.VarChar(50)
+  price        Decimal  @map("price") @db.Decimal(10,2)
+  stock        Int      @default(0) @map("stock")
+  attributes   Json?    @map("attributes")                   // 规格属性JSON
+  status       Int      @default(1) @map("status")
+  created_at   DateTime @default(now()) @map("created_at")
+  updated_at   DateTime @updatedAt @map("updated_at")
+
+  product      Product  @relation(fields: [product_id], references: [id])
+  product_stocks ProductStock[] // SKU的库存记录
+
+  @@unique([sku_code], map: "uk_product_skus_sku_code")
+  @@index([product_id], map: "idx_product_skus_product_id")
+  @@map("product_skus")
+}
+
+/// 商品属性表
+/// 说明：商品扩展属性
+model ProductAttribute {
+  id           String   @id @default(uuid()) @map("id") @db.VarChar(36)
+  product_id   String   @map("product_id") @db.VarChar(36)
+  name         String   @map("name") @db.VarChar(50)
+  value        String   @map("value") @db.VarChar(100)
+  created_at   DateTime @default(now()) @map("created_at")
+
+  product      Product  @relation(fields: [product_id], references: [id])
+
+  @@index([product_id], map: "idx_product_attributes_product_id")
+  @@map("product_attributes")
+}
+
+/// 商品图片表
+/// 说明：商品图片管理
+model ProductImage {
+  id           String   @id @default(uuid()) @map("id") @db.VarChar(36)
+  product_id   String   @map("product_id") @db.VarChar(36)
+  url          String   @map("url") @db.VarChar(255)
+  type         String   @default("main") @map("type") @db.VarChar(20) // main/detail/sku
+  sort         Int      @default(0) @map("sort")
+  created_at   DateTime @default(now()) @map("created_at")
+
+  product      Product  @relation(fields: [product_id], references: [id])
+
+  @@index([product_id], map: "idx_product_images_product_id")
+  @@map("product_images")
+}
+
+/// 商品库存表
+/// 说明：独立库存表，支持多仓库、SKU级库存、库存类型，便于高并发和扩展
+model ProductStock {
+  id           String   @id @default(uuid()) @map("id") @db.VarChar(36)
+  product_id   String   @map("product_id") @db.VarChar(36)         // 商品ID
+  sku_id       String   @map("sku_id") @db.VarChar(36)             // SKU ID
+  warehouse_id String?  @map("warehouse_id") @db.VarChar(36)       // 仓库ID，预留多仓库扩展
+  stock_type   String   @default("sellable") @map("stock_type") @db.VarChar(20) // sellable:可售 locked:锁定预留 warning:预警
+  quantity     Int      @default(0) @map("quantity")               // 当前库存数量
+  warning_line Int      @default(0) @map("warning_line")           // 库存预警线
+  updated_at   DateTime @updatedAt @map("updated_at")
+  created_at   DateTime @default(now()) @map("created_at")
+
+  // 关联关系
+  product      Product  @relation(fields: [product_id], references: [id])
+  sku          ProductSku @relation(fields: [sku_id], references: [id])
+  stock_logs   ProductStockLog[] // 库存的变动日志
+
+  @@index([product_id], map: "idx_product_stocks_product_id")
+  @@index([sku_id], map: "idx_product_stocks_sku_id")
+  @@index([warehouse_id], map: "idx_product_stocks_warehouse_id")
+  @@index([stock_type], map: "idx_product_stocks_stock_type")
+  @@map("product_stocks")
+}
+
+/// 商品库存变动流水表
+/// 说明：记录每一次库存变动，便于追踪和审计
+model ProductStockLog {
+  id           String   @id @default(uuid()) @map("id") @db.VarChar(36)
+  stock_id     String   @map("stock_id") @db.VarChar(36)           // 对应库存表ID
+  change       Int      @map("change")                              // 变动数量（正数为入库，负数为出库）
+  type         String   @map("type") @db.VarChar(30)               // 类型：in/out/lock/unlock/adjust
+  order_id     String?  @map("order_id") @db.VarChar(36)           // 关联订单ID（如有）
+  remark       String?  @map("remark") @db.VarChar(255)
+  created_at   DateTime @default(now()) @map("created_at")
+
+  stock        ProductStock @relation(fields: [stock_id], references: [id])
+
+  @@index([stock_id], map: "idx_product_stock_logs_stock_id")
+  @@index([type], map: "idx_product_stock_logs_type")
+  @@map("product_stock_logs")
+}
+
+// ================================
+// 订单系统模块
+// ================================
+
+/// 购物车表
+/// 说明：用户购物车管理
+model ShoppingCart {
+  id           String   @id @default(uuid()) @map("id") @db.VarChar(36)
+  user_id      String   @map("user_id") @db.VarChar(36)
+  sku_id       String   @map("sku_id") @db.VarChar(36)
+  quantity     Int      @default(1) @map("quantity")
+  checked      Int      @default(1) @map("checked")           // 1:选中 0:未选中
+  created_at   DateTime @default(now()) @map("created_at")
+  updated_at   DateTime @updatedAt @map("updated_at")
+
+  @@index([user_id], map: "idx_shopping_carts_user_id")
+  @@index([sku_id], map: "idx_shopping_carts_sku_id")
+  @@map("shopping_carts")
+}
+
+/// 订单表
+/// 说明：订单主表
+model Order {
+  id           String   @id @default(uuid()) @map("id") @db.VarChar(36)
+  user_id      String   @map("user_id") @db.VarChar(36)
+  order_no     String   @unique @map("order_no") @db.VarChar(50)
+  status       Int      @default(0) @map("status")             // 0:待支付 1:已支付 2:已发货 3:已完成 4:已取消
+  total_amount Decimal  @map("total_amount") @db.Decimal(10,2)
+  pay_amount   Decimal  @map("pay_amount") @db.Decimal(10,2)
+  pay_time     DateTime? @map("pay_time")
+  address      String   @map("address") @db.VarChar(255)
+  consignee    String   @map("consignee") @db.VarChar(50)
+  phone        String   @map("phone") @db.VarChar(20)
+  remark       String?  @map("remark") @db.VarChar(255)
+  created_at   DateTime @default(now()) @map("created_at")
+  updated_at   DateTime @updatedAt @map("updated_at")
+
+  items        OrderItem[]
+  logs         OrderLog[]
+  payments     Payment[]
+
+  @@index([user_id], map: "idx_orders_user_id")
+  @@index([status], map: "idx_orders_status")
+  @@map("orders")
+}
+
+/// 订单商品表
+/// 说明：订单商品详情
+model OrderItem {
+  id           String   @id @default(uuid()) @map("id") @db.VarChar(36)
+  order_id     String   @map("order_id") @db.VarChar(36)
+  sku_id       String   @map("sku_id") @db.VarChar(36)
+  product_id   String   @map("product_id") @db.VarChar(36)
+  name         String   @map("name") @db.VarChar(100)
+  price        Decimal  @map("price") @db.Decimal(10,2)
+  quantity     Int      @map("quantity")
+  image        String?  @map("image") @db.VarChar(255)
+  attributes   Json?    @map("attributes")                   // 规格属性快照
+  created_at   DateTime @default(now()) @map("created_at")
+
+  order        Order    @relation(fields: [order_id], references: [id])
+
+  @@index([order_id], map: "idx_order_items_order_id")
+  @@index([sku_id], map: "idx_order_items_sku_id")
+  @@map("order_items")
+}
+
+/// 订单日志表
+/// 说明：订单状态变更历史
+model OrderLog {
+  id           String   @id @default(uuid()) @map("id") @db.VarChar(36)
+  order_id     String   @map("order_id") @db.VarChar(36)
+  status       Int      @map("status")
+  remark       String?  @map("remark") @db.VarChar(255)
+  created_at   DateTime @default(now()) @map("created_at")
+
+  order        Order    @relation(fields: [order_id], references: [id])
+
+  @@index([order_id], map: "idx_order_logs_order_id")
+  @@map("order_logs")
+}
+
+// ================================
+// 支付系统模块
+// ================================
+
+/// 支付记录表
+/// 说明：支付流水记录
+model Payment {
+  id           String   @id @default(uuid()) @map("id") @db.VarChar(36)
+  order_id     String   @map("order_id") @db.VarChar(36)
+  pay_type     String   @map("pay_type") @db.VarChar(20)      // wechat/alipay/other
+  pay_no       String?  @map("pay_no") @db.VarChar(50)        // 第三方支付单号
+  amount       Decimal  @map("amount") @db.Decimal(10,2)
+  status       Int      @default(0) @map("status")            // 0:待支付 1:已支付 2:失败
+  pay_time     DateTime? @map("pay_time")
+  created_at   DateTime @default(now()) @map("created_at")
+
+  order        Order    @relation(fields: [order_id], references: [id])
+
+  @@index([order_id], map: "idx_payments_order_id")
+  @@map("payments")
+}
+
+/// 退款记录表
+/// 说明：退款流水记录
+model Refund {
+  id           String   @id @default(uuid()) @map("id") @db.VarChar(36)
+  order_id     String   @map("order_id") @db.VarChar(36)
+  payment_id   String   @map("payment_id") @db.VarChar(36)
+  refund_no    String   @unique @map("refund_no") @db.VarChar(50)
+  amount       Decimal  @map("amount") @db.Decimal(10,2)
+  status       Int      @default(0) @map("status")            // 0:待审核 1:已退款 2:拒绝
+  reason       String?  @map("reason") @db.VarChar(255)
+  created_at   DateTime @default(now()) @map("created_at")
+  refund_time  DateTime? @map("refund_time")
+
+  @@index([order_id], map: "idx_refunds_order_id")
+  @@index([payment_id], map: "idx_refunds_payment_id")
+  @@map("refunds")
+}
+
+// ================================
+// 营销系统模块（优惠券、秒杀、拼团、砍价、限时折扣等扩展预留）
+// ================================
+
+/// 优惠券模板表
+/// 说明：优惠券模板定义
+model CouponTemplate {
+  id           String   @id @default(uuid()) @map("id") @db.VarChar(36)
+  name         String   @map("name") @db.VarChar(50)
+  type         String   @map("type") @db.VarChar(20)          // 满减/折扣/免邮
+  amount       Decimal  @map("amount") @db.Decimal(10,2)
+  min_amount   Decimal  @map("min_amount") @db.Decimal(10,2)  // 满足金额
+  discount     Decimal? @map("discount") @db.Decimal(5,2)     // 折扣率
+  total        Int      @map("total")                         // 发放总量
+  received     Int      @default(0) @map("received")          // 已领取数量
+  start_time   DateTime @map("start_time")
+  end_time     DateTime @map("end_time")
+  status       Int      @default(1) @map("status")
+  created_at   DateTime @default(now()) @map("created_at")
+  updated_at   DateTime @updatedAt @map("updated_at")
+
+  user_coupons UserCoupon[]
+
+  @@index([type], map: "idx_coupon_templates_type")
+  @@index([status], map: "idx_coupon_templates_status")
+  @@map("coupon_templates")
+}
+
+/// 用户优惠券表
+/// 说明：用户拥有的优惠券
+model UserCoupon {
+  id           String   @id @default(uuid()) @map("id") @db.VarChar(36)
+  user_id      String   @map("user_id") @db.VarChar(36)
+  template_id  String   @map("template_id") @db.VarChar(36)
+  status       Int      @default(0) @map("status")             // 0:未使用 1:已使用 2:已过期
+  used_time    DateTime? @map("used_time")
+  expire_time  DateTime  @map("expire_time")
+  created_at   DateTime @default(now()) @map("created_at")
+
+  template     CouponTemplate @relation(fields: [template_id], references: [id])
+
+  @@index([user_id], map: "idx_user_coupons_user_id")
+  @@index([template_id], map: "idx_user_coupons_template_id")
+  @@map("user_coupons")
+}
+
+/// 营销活动主表
+/// 说明：营销活动主表，支持多种类型
+model MarketingActivity {
+  id           String   @id @default(uuid()) @map("id") @db.VarChar(36)
+  name         String   @map("name") @db.VarChar(100)
+  type         String   @map("type") @db.VarChar(20)          // seckill/groupbuy/bargain/discount
+  start_time   DateTime @map("start_time")
+  end_time     DateTime @map("end_time")
+  status       Int      @default(1) @map("status")
+  config       Json?    @map("config")                        // 活动配置JSON
+  created_at   DateTime @default(now()) @map("created_at")
+  updated_at   DateTime @updatedAt @map("updated_at")
+
+  seckills     SeckillActivity[]
+  groupbuys    GroupBuyActivity[]
+  bargains     BargainActivity[]
+
+  @@index([type], map: "idx_marketing_activities_type")
+  @@index([status], map: "idx_marketing_activities_status")
+  @@map("marketing_activities")
+}
+
+/// 秒杀活动表
+/// 说明：秒杀活动配置
+model SeckillActivity {
+  id           String   @id @default(uuid()) @map("id") @db.VarChar(36)
+  marketing_id String   @map("marketing_id") @db.VarChar(36)
+  product_id   String   @map("product_id") @db.VarChar(36)
+  sku_id       String   @map("sku_id") @db.VarChar(36)
+  price        Decimal  @map("price") @db.Decimal(10,2)
+  stock        Int      @map("stock")
+  limit_count  Int      @map("limit_count")                    // 每人限购
+  start_time   DateTime @map("start_time")
+  end_time     DateTime @map("end_time")
+  status       Int      @default(1) @map("status")
+  created_at   DateTime @default(now()) @map("created_at")
+
+  marketing    MarketingActivity @relation(fields: [marketing_id], references: [id])
+
+  @@index([marketing_id], map: "idx_seckill_activities_marketing_id")
+  @@index([product_id], map: "idx_seckill_activities_product_id")
+  @@map("seckill_activities")
+}
+
+/// 拼团活动表
+/// 说明：拼团活动配置
+model GroupBuyActivity {
+  id           String   @id @default(uuid()) @map("id") @db.VarChar(36)
+  marketing_id String   @map("marketing_id") @db.VarChar(36)
+  product_id   String   @map("product_id") @db.VarChar(36)
+  sku_id       String   @map("sku_id") @db.VarChar(36)
+  group_size   Int      @map("group_size")                     // 成团人数
+  price        Decimal  @map("price") @db.Decimal(10,2)
+  start_time   DateTime @map("start_time")
+  end_time     DateTime @map("end_time")
+  status       Int      @default(1) @map("status")
+  created_at   DateTime @default(now()) @map("created_at")
+
+  marketing    MarketingActivity @relation(fields: [marketing_id], references: [id])
+  records      GroupBuyRecord[]
+
+  @@index([marketing_id], map: "idx_group_buy_activities_marketing_id")
+  @@index([product_id], map: "idx_group_buy_activities_product_id")
+  @@map("group_buy_activities")
+}
+
+/// 拼团记录表
+/// 说明：用户拼团参与记录
+model GroupBuyRecord {
+  id           String   @id @default(uuid()) @map("id") @db.VarChar(36)
+  groupbuy_id  String   @map("groupbuy_id") @db.VarChar(36)
+  user_id      String   @map("user_id") @db.VarChar(36)
+  status       Int      @default(0) @map("status")             // 0:拼团中 1:成功 2:失败
+  created_at   DateTime @default(now()) @map("created_at")
+
+  groupbuy     GroupBuyActivity @relation(fields: [groupbuy_id], references: [id])
+
+  @@index([groupbuy_id], map: "idx_group_buy_records_groupbuy_id")
+  @@index([user_id], map: "idx_group_buy_records_user_id")
+  @@map("group_buy_records")
+}
+
+/// 砍价活动表
+/// 说明：砍价活动配置
+model BargainActivity {
+  id           String   @id @default(uuid()) @map("id") @db.VarChar(36)
+  marketing_id String   @map("marketing_id") @db.VarChar(36)
+  product_id   String   @map("product_id") @db.VarChar(36)
+  sku_id       String   @map("sku_id") @db.VarChar(36)
+  min_price    Decimal  @map("min_price") @db.Decimal(10,2)   // 砍到底价
+  start_time   DateTime @map("start_time")
+  end_time     DateTime @map("end_time")
+  status       Int      @default(1) @map("status")
+  created_at   DateTime @default(now()) @map("created_at")
+
+  marketing    MarketingActivity @relation(fields: [marketing_id], references: [id])
+  records      BargainRecord[]
+
+  @@index([marketing_id], map: "idx_bargain_activities_marketing_id")
+  @@index([product_id], map: "idx_bargain_activities_product_id")
+  @@map("bargain_activities")
+}
+
+/// 砍价记录表
+/// 说明：用户砍价参与记录
+model BargainRecord {
+  id           String   @id @default(uuid()) @map("id") @db.VarChar(36)
+  bargain_id   String   @map("bargain_id") @db.VarChar(36)
+  user_id      String   @map("user_id") @db.VarChar(36)
+  amount       Decimal  @map("amount") @db.Decimal(10,2)      // 已砍金额
+  status       Int      @default(0) @map("status")             // 0:进行中 1:成功 2:失败
+  created_at   DateTime @default(now()) @map("created_at")
+
+  bargain      BargainActivity @relation(fields: [bargain_id], references: [id])
+
+  @@index([bargain_id], map: "idx_bargain_records_bargain_id")
+  @@index([user_id], map: "idx_bargain_records_user_id")
+  @@map("bargain_records")
 }
