@@ -20,6 +20,9 @@ import userAddressRoutes from './user-addresses.js';
 import productCategoryRoutes from './product-categories.js';
 import productRoutes from './products.js';
 import skuRoutes from './skus.js';
+import productAttributeRoutes from './product-attributes.js';
+import productImageRoutes from './product-images.js';
+import productStockRoutes from './product-stocks.js';
 import shoppingCartRoutes from './shopping-cart.js';
 
 // 创建主路由实例
@@ -69,6 +72,9 @@ router.use(userAddressRoutes.routes(), userAddressRoutes.allowedMethods());
 router.use(productCategoryRoutes.routes(), productCategoryRoutes.allowedMethods());
 router.use(productRoutes.routes(), productRoutes.allowedMethods());
 router.use(skuRoutes.routes(), skuRoutes.allowedMethods());
+router.use(productAttributeRoutes.routes(), productAttributeRoutes.allowedMethods());
+router.use(productImageRoutes.routes(), productImageRoutes.allowedMethods());
+router.use(productStockRoutes.routes(), productStockRoutes.allowedMethods());
 
 // 购物车管理模块
 router.use(shoppingCartRoutes.routes(), shoppingCartRoutes.allowedMethods());
