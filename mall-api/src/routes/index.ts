@@ -19,6 +19,8 @@ import memberPointRoutes from './member-points.js';
 import userAddressRoutes from './user-addresses.js';
 import productCategoryRoutes from './product-categories.js';
 import productRoutes from './products.js';
+import skuRoutes from './skus.js';
+import shoppingCartRoutes from './shopping-cart.js';
 
 // 创建主路由实例
 const router = new Router();
@@ -66,6 +68,10 @@ router.use(userAddressRoutes.routes(), userAddressRoutes.allowedMethods());
 // 商品管理模块
 router.use(productCategoryRoutes.routes(), productCategoryRoutes.allowedMethods());
 router.use(productRoutes.routes(), productRoutes.allowedMethods());
+router.use(skuRoutes.routes(), skuRoutes.allowedMethods());
+
+// 购物车管理模块
+router.use(shoppingCartRoutes.routes(), shoppingCartRoutes.allowedMethods());
 
 // TODO: 后续添加其他商城模块路由
 // router.use(`${API_PREFIX}/orders`, orderRoutes.routes(), orderRoutes.allowedMethods());
