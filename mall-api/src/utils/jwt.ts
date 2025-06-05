@@ -5,7 +5,7 @@
  * @since 1.0.0
  */
 
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 
 // JWT配置
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
@@ -29,7 +29,7 @@ export class JwtUtils {
    * @returns JWT令牌
    */
   generateToken(payload: Omit<IJwtPayload, 'iat' | 'exp'>, expiresIn: string = JWT_EXPIRES_IN): string {
-    const options = { expiresIn };
+    const options = { expiresIn } as SignOptions;
     return jwt.sign(payload, JWT_SECRET, options);
   }
 
@@ -40,7 +40,7 @@ export class JwtUtils {
    * @returns 刷新令牌
    */
   generateRefreshToken(payload: Omit<IJwtPayload, 'iat' | 'exp'>, expiresIn: string = JWT_REFRESH_EXPIRES_IN): string {
-    const options = { expiresIn };
+    const options = { expiresIn } as SignOptions;
     return jwt.sign(payload, JWT_REFRESH_SECRET, options);
   }
 

@@ -5,6 +5,9 @@
  * @since 1.0.0
  */
 
+import { Decimal } from '@prisma/client/runtime/library';
+import { PageQuery } from './common.js';
+
 /**
  * 商品状态枚举
  */
@@ -69,9 +72,9 @@ export interface IProduct {
   brand?: string;
   description?: string;
   mainImage?: string;
-  price: number;
-  marketPrice: number;
-  status: ProductStatus;
+  price: Decimal;
+  marketPrice: Decimal;
+  status: number;
   stock: number;
   sales: number;
   sort: number;
@@ -86,21 +89,90 @@ export interface IProduct {
 }
 
 /**
+ * 商品创建参数接口
+ */
+export interface IProductCreateParams {
+  name: string;
+  categoryId: string;
+  brand?: string;
+  description?: string;
+  mainImage?: string;
+  price: number;
+  marketPrice: number;
+  status?: number;
+  stock?: number;
+  sort?: number;
+}
+
+/**
+ * 商品更新参数接口
+ */
+export interface IProductUpdateParams {
+  name?: string;
+  categoryId?: string;
+  brand?: string;
+  description?: string;
+  mainImage?: string;
+  price?: number;
+  marketPrice?: number;
+  status?: number;
+  stock?: number;
+  sort?: number;
+}
+
+/**
+ * 商品查询参数接口
+ */
+export interface IProductQueryParams extends PageQuery {
+  name?: string;
+  categoryId?: string;
+  brand?: string;
+  status?: number;
+  minPrice?: number;
+  maxPrice?: number;
+  sort?: string;
+  order?: 'asc' | 'desc';
+}
+
+/**
  * 商品SKU接口
  */
 export interface IProductSku {
   id: string;
   productId: string;
   skuCode: string;
-  price: number;
+  price: Decimal;
   stock: number;
-  attributes?: any; // JSON 规格属性
-  status: ProductStatus;
+  attributes?: Record<string, unknown>;
+  status: number;
   createdAt: Date;
   updatedAt: Date;
   // 关联数据
   product?: IProduct;
   productStocks?: IProductStock[];
+}
+
+/**
+ * SKU创建参数接口
+ */
+export interface ISkuCreateParams {
+  productId: string;
+  skuCode: string;
+  price: number;
+  stock?: number;
+  attributes?: Record<string, unknown>;
+  status?: number;
+}
+
+/**
+ * SKU更新参数接口
+ */
+export interface ISkuUpdateParams {
+  skuCode?: string;
+  price?: number;
+  stock?: number;
+  attributes?: Record<string, unknown>;
+  status?: number;
 }
 
 /**
@@ -117,17 +189,53 @@ export interface IProductAttribute {
 }
 
 /**
+ * 属性创建参数接口
+ */
+export interface IAttributeCreateParams {
+  productId: string;
+  name: string;
+  value: string;
+}
+
+/**
+ * 属性更新参数接口
+ */
+export interface IAttributeUpdateParams {
+  name?: string;
+  value?: string;
+}
+
+/**
  * 商品图片接口
  */
 export interface IProductImage {
   id: string;
   productId: string;
   url: string;
-  type: string; // main/detail/sku
+  type: string;
   sort: number;
   createdAt: Date;
   // 关联数据
   product?: IProduct;
+}
+
+/**
+ * 图片创建参数接口
+ */
+export interface IImageCreateParams {
+  productId: string;
+  url: string;
+  type?: string;
+  sort?: number;
+}
+
+/**
+ * 图片更新参数接口
+ */
+export interface IImageUpdateParams {
+  url?: string;
+  type?: string;
+  sort?: number;
 }
 
 /**
@@ -138,15 +246,36 @@ export interface IProductStock {
   productId: string;
   skuId: string;
   warehouseId?: string;
-  stockType: StockType;
+  stockType: string;
   quantity: number;
   warningLine: number;
-  updatedAt: Date;
   createdAt: Date;
+  updatedAt: Date;
   // 关联数据
   product?: IProduct;
   sku?: IProductSku;
   stockLogs?: IProductStockLog[];
+}
+
+/**
+ * 库存创建参数接口
+ */
+export interface IStockCreateParams {
+  productId: string;
+  skuId: string;
+  warehouseId?: string;
+  stockType?: string;
+  quantity: number;
+  warningLine?: number;
+}
+
+/**
+ * 库存更新参数接口
+ */
+export interface IStockUpdateParams {
+  quantity?: number;
+  warningLine?: number;
+  stockType?: string;
 }
 
 /**
@@ -156,12 +285,34 @@ export interface IProductStockLog {
   id: string;
   stockId: string;
   change: number;
-  type: StockLogType;
+  type: string;
   orderId?: string;
   remark?: string;
   createdAt: Date;
   // 关联数据
   stock?: IProductStock;
+}
+
+/**
+ * 库存变动参数接口
+ */
+export interface IStockLogCreateParams {
+  stockId: string;
+  change: number;
+  type: string;
+  orderId?: string;
+  remark?: string;
+}
+
+/**
+ * 商品详情接口（包含关联数据）
+ */
+export interface IProductDetail extends IProduct {
+  category?: IProductCategory;
+  skus?: IProductSku[];
+  attributes?: IProductAttribute[];
+  images?: IProductImage[];
+  stocks?: IProductStock[];
 }
 
 // ===== 请求/响应类型定义 =====
