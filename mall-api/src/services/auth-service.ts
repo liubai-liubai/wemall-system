@@ -7,15 +7,15 @@
 
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import { prisma } from '../config/database.js';
+import { prisma } from '../config/database';
 import { 
   IWechatLoginRequest, 
   IUserLoginResponse, 
   IUserInfo,
   IJwtPayload,
   UserStatus 
-} from '../types/user.js';
-import { logger } from '../utils/logger.js';
+} from '../types/user';
+import { logger } from '../utils/logger';
 
 /**
  * 认证服务类

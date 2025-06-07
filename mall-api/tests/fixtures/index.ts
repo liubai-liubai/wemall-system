@@ -10,6 +10,10 @@ import {
   generateRandomNumber 
 } from '../helpers/test-utils';
 
+// 导出库存管理相关测试数据
+export * from './product-stock-fixtures';
+export * from './shopping-cart-fixtures';
+
 // 产品相关测试数据
 export const ProductFixtures = {
   // 基础产品数据

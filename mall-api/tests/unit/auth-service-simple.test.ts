@@ -6,7 +6,7 @@
 
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import jwt from 'jsonwebtoken';
-import { UserStatus } from '../../src/types/user.js';
+import { UserStatus } from '../../src/types/user';
 
 describe('AuthService Core Logic Tests', () => {
   beforeEach(() => {

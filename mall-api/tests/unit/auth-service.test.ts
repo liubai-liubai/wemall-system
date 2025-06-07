@@ -4,9 +4,9 @@
  * @author 刘白 & AI Assistant
  */
 
-import { describe, it, expect, beforeEach, jest } from '@jest/globals';
+import { describe, it, expect, beforeEach, beforeAll, jest } from '@jest/globals';
 import jwt from 'jsonwebtoken';
-import { UserStatus } from '../../src/types/user.js';
+import { UserStatus } from '../../src/types/user';
 
 // 模拟Prisma客户端
 const mockPrisma = {
@@ -22,12 +22,12 @@ const mockPrisma = {
 };
 
 // 模拟数据库配置
-jest.mock('../../src/config/database.js', () => ({
+jest.mock('../../src/config/database', () => ({
   prisma: mockPrisma
 }));
 
 // 模拟logger
-jest.mock('../../src/utils/logger.js', () => ({
+jest.mock('../../src/utils/logger', () => ({
   logger: {
     error: jest.fn(),
     info: jest.fn(),
@@ -42,7 +42,7 @@ describe('AuthService', () => {
 
   beforeAll(async () => {
     // 动态导入服务
-    const module = await import('../../src/services/auth-service.js');
+    const module = await import('../../src/services/auth-service');
     AuthService = module.AuthService;
   });
 
