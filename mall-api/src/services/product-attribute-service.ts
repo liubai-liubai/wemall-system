@@ -17,7 +17,7 @@ import {
   ProductAttributeResponse,
   BatchCreateAttributesRequest,
   BatchAttributeOperationRequest
-} from '../types/product-attribute.js';
+} from '../types/product-attribute';
 
 const prisma = new PrismaClient();
 

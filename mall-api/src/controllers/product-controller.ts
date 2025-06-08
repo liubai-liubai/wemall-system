@@ -6,16 +6,16 @@
  */
 
 import { Context, Next } from 'koa';
-import { ProductService } from '../services/product-service.js';
+import { ProductService } from '../services/product-service';
 import { 
   productCreateSchema, 
   productUpdateSchema, 
   productQuerySchema,
   productBatchSchema,
   uuidSchema 
-} from '../schemas/product-schemas.js';
-import { IProduct, IProductDetail } from '../types/product.js';
-import { ApiResponse, PageResponse } from '../types/common.js';
+} from '../schemas/product-schemas';
+import { IProduct, IProductDetail } from '../types/product';
+import { ApiResponse, PageResponse } from '../types/common';
 
 const productService = new ProductService();
 

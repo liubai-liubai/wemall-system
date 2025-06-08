@@ -6,7 +6,7 @@
  */
 
 import Router from '@koa/router';
-import { healthController } from '../controllers/health-controller.js';
+import { healthController } from '../controllers/health-controller';
 
 // 创建健康检查路由实例
 const router = new Router();

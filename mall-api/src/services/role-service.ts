@@ -11,10 +11,10 @@ import {
   ICreateRoleRequest, 
   IUpdateRoleRequest,
   IRoleQueryParams
-} from '../types/system.js';
-import { PageData } from '../types/common.js';
-import { RoleModel, RoleDTO, RoleSimpleDTO } from '../models/index.js';
-import { formatRole } from '../utils/format.js';
+} from '../types/system';
+import { PageData } from '../types/common';
+import { RoleModel, RoleDTO, RoleSimpleDTO } from '../models/index';
+import { formatRole } from '../utils/format';
 
 const prisma = new PrismaClient();
 

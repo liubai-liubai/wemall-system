@@ -5,7 +5,7 @@
  */
 
 import Router from '@koa/router';
-import { ProductAttributeController } from '../controllers/product-attribute-controller.js';
+import { ProductAttributeController } from '../controllers/product-attribute-controller';
 
 const router = new Router({
   prefix: '/api/v1'

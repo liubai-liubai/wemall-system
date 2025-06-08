@@ -5,8 +5,8 @@
  */
 
 import { Context } from 'koa';
-import { DashboardService } from '../services/dashboard-service.js';
-import { success } from '../utils/response.js';
+import { DashboardService } from '../services/dashboard-service';
+import { success } from '../utils/response';
 
 export class DashboardController {
   private dashboardService: DashboardService;

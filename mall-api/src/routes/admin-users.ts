@@ -6,7 +6,7 @@
  */
 
 import Router from '@koa/router';
-import { adminUserController } from '../controllers/admin-user-controller.js';
+import { adminUserController } from '../controllers/admin-user-controller';
 
 const router = new Router();
 

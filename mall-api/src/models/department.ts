@@ -5,7 +5,7 @@
  * @since 1.0.0
  */
 
-import { IDepartment, IAdminUser } from '../types/system.js';
+import { IDepartment, IAdminUser } from '../types/system';
 
 /**
  * 部门实体模型

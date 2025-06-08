@@ -5,7 +5,7 @@
  */
 
 import Router from '@koa/router';
-import { memberLevelController } from '../controllers/member-level-controller.js';
+import { memberLevelController } from '../controllers/member-level-controller';
 
 const router = new Router({
   prefix: '/api/v1/member/levels'

@@ -5,16 +5,16 @@
  * @since 1.0.0
  */
 
-import { prisma } from '../config/database.js';
+import { prisma } from '../config/database';
 import { 
   IMemberPoint,
   ICreateMemberPointRequest,
   IMemberPointQueryParams,
   IMemberPointListResponse,
   PointChangeType
-} from '../types/member.js';
-import { logger } from '../utils/logger.js';
-import { userMemberService } from './user-member-service.js';
+} from '../types/member';
+import { logger } from '../utils/logger';
+import { userMemberService } from './user-member-service';
 
 export class MemberPointService {
   /**

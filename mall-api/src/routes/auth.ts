@@ -6,10 +6,10 @@
  */
 
 import Router from '@koa/router';
-import { authController } from '../controllers/auth-controller.js';
-import { adminUserController } from '../controllers/admin-user-controller.js';
-// import { authValidator } from '../validators/auth.js';  // 后续添加
-// import { authMiddleware } from '../middleware/auth.js'; // 后续添加
+import { authController } from '../controllers/auth-controller';
+import { adminUserController } from '../controllers/admin-user-controller';
+// import { authValidator } from '../validators/auth';  // 后续添加
+// import { authMiddleware } from '../middleware/auth'; // 后续添加
 
 // 创建认证路由实例
 const router = new Router();

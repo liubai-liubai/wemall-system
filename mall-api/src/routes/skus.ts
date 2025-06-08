@@ -6,9 +6,9 @@
  */
 
 import Router from '@koa/router';
-import { SkuController } from '../controllers/sku-controller.js';
+import { SkuController } from '../controllers/sku-controller';
 // TODO: 添加认证中间件
-// import { authMiddleware } from '../middleware/auth.js';
+// import { authMiddleware } from '../middleware/auth';
 
 const router = new Router({
   prefix: '/api/v1'

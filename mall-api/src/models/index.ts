@@ -9,14 +9,14 @@
 export {
   AdminUserModel,
   AdminUserDTO
-} from './user.js';
+} from './user';
 
 // 角色相关模型
 export {
   RoleModel,
   RoleDTO,
   RoleSimpleDTO
-} from './role.js';
+} from './role';
 
 // 权限相关模型
 export {
@@ -24,7 +24,7 @@ export {
   PermissionDTO,
   MenuPermissionDTO,
   PermissionTreeNode
-} from './permission.js';
+} from './permission';
 
 // 部门相关模型
 export {
@@ -32,7 +32,7 @@ export {
   DepartmentDTO,
   DepartmentSimpleDTO,
   DepartmentTreeNode
-} from './department.js';
+} from './department';
 
 /**
  * 模型使用说明：
@@ -60,7 +60,7 @@ export {
  * 使用示例：
  * 
  * ```typescript
- * import { AdminUserModel, AdminUserDTO } from '../models/index.js';
+ * import { AdminUserModel, AdminUserDTO } from '../models/index';
  * 
  * // 创建用户实体模型
  * const userModel = new AdminUserModel(userData);

@@ -16,8 +16,8 @@ import {
   ICartStatistics,
   ICartValidation,
   CartListResponse
-} from '../types/shopping-cart.js';
-import { PageResponse } from '../types/common.js';
+} from '../types/shopping-cart';
+import { PageResponse } from '../types/common';
 
 // 获取Prisma客户端实例
 const prisma = new PrismaClient();

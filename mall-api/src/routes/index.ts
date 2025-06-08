@@ -6,24 +6,24 @@
  */
 
 import Router from '@koa/router';
-import healthRoutes from './health.js';
-import authRoutes from './auth.js';
-import dashboardRoutes from './dashboard.js';
-import permissionRoutes from './permissions.js';
-import roleRoutes from './roles.js';
-import departmentRoutes from './departments.js';
-import adminUserRoutes from './admin-users.js';
-import memberLevelRoutes from './member-levels.js';
-import userMemberRoutes from './user-members.js';
-import memberPointRoutes from './member-points.js';
-import userAddressRoutes from './user-addresses.js';
-import productCategoryRoutes from './product-categories.js';
-import productRoutes from './products.js';
-import skuRoutes from './skus.js';
-import productAttributeRoutes from './product-attributes.js';
-import productImageRoutes from './product-images.js';
-import productStockRoutes from './product-stocks.js';
-import shoppingCartRoutes from './shopping-cart.js';
+import healthRoutes from './health';
+import authRoutes from './auth';
+import dashboardRoutes from './dashboard';
+import permissionRoutes from './permissions';
+import roleRoutes from './roles';
+import departmentRoutes from './departments';
+import adminUserRoutes from './admin-users';
+import memberLevelRoutes from './member-levels';
+import userMemberRoutes from './user-members';
+import memberPointRoutes from './member-points';
+import userAddressRoutes from './user-addresses';
+import productCategoryRoutes from './product-categories';
+import productRoutes from './products';
+import skuRoutes from './skus';
+import productAttributeRoutes from './product-attributes';
+import productImageRoutes from './product-images';
+import productStockRoutes from './product-stocks';
+import shoppingCartRoutes from './shopping-cart';
 
 // 创建主路由实例
 const router = new Router();

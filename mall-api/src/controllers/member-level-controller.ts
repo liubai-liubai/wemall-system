@@ -6,13 +6,13 @@
  */
 
 import { Context } from 'koa';
-import { memberLevelService } from '../services/member-level-service.js';
-import { success, error } from '../utils/response.js';
+import { memberLevelService } from '../services/member-level-service';
+import { success, error } from '../utils/response';
 import { 
   IMemberLevelQueryParams,
   ICreateMemberLevelRequest,
   IUpdateMemberLevelRequest
-} from '../types/member.js';
+} from '../types/member';
 
 export class MemberLevelController {
   /**

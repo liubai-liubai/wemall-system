@@ -6,7 +6,7 @@
  */
 
 import { Decimal } from '@prisma/client/runtime/library';
-import { PageQuery } from './common.js';
+import { PageQuery } from './common';
 
 /**
  * 购物车状态枚举
@@ -152,6 +152,13 @@ export interface UpdateCartItemRequest {
 export interface BatchCartRequest {
   ids: string[];
   action: 'delete' | 'check' | 'uncheck';
+}
+
+/**
+ * 验证购物车请求
+ */
+export interface ValidateCartRequest {
+  cartIds?: string[];
 }
 
 /**

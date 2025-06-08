@@ -5,7 +5,7 @@
  * @since 1.0.0
  */
 
-import { IAdminUser } from '../types/system.js';
+import { IAdminUser } from '../types/system';
 
 /**
  * 管理员用户实体模型

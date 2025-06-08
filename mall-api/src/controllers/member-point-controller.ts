@@ -6,13 +6,13 @@
  */
 
 import { Context } from 'koa';
-import { memberPointService } from '../services/member-point-service.js';
-import { success, error } from '../utils/response.js';
+import { memberPointService } from '../services/member-point-service';
+import { success, error } from '../utils/response';
 import { 
   IMemberPointQueryParams,
   ICreateMemberPointRequest,
   PointChangeType
-} from '../types/member.js';
+} from '../types/member';
 
 export class MemberPointController {
   /**

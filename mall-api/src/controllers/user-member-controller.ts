@@ -6,13 +6,13 @@
  */
 
 import { Context } from 'koa';
-import { userMemberService } from '../services/user-member-service.js';
-import { success, error } from '../utils/response.js';
+import { userMemberService } from '../services/user-member-service';
+import { success, error } from '../utils/response';
 import { 
   IUserMemberQueryParams,
   ICreateUserMemberRequest,
   IUpdateUserMemberRequest
-} from '../types/member.js';
+} from '../types/member';
 
 export class UserMemberController {
   /**

@@ -5,7 +5,7 @@
  * @since 1.0.0
  */
 
-import { ApiResponse, PageResponse } from '../types/common.js';
+import { ApiResponse, PageResponse } from '../types/common';
 
 /**
  * 成功响应

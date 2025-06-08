@@ -5,7 +5,7 @@
  * @since 1.0.0
  */
 
-import { IRole, IPermission } from '../types/system.js';
+import { IRole, IPermission } from '../types/system';
 
 /**
  * 角色实体模型

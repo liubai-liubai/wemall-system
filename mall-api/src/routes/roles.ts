@@ -6,7 +6,7 @@
  */
 
 import Router from '@koa/router';
-import { roleController } from '../controllers/role-controller.js';
+import { roleController } from '../controllers/role-controller';
 
 const router = new Router();
 

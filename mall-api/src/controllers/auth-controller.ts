@@ -6,10 +6,10 @@
  */
 
 import { Context } from 'koa';
-import { authService } from '../services/auth-service.js';
-import { success, error, HTTP_STATUS } from '../utils/response.js';
-import { logger } from '../utils/logger.js';
-import { IWechatLoginRequest } from '../types/user.js';
+import { authService } from '../services/auth-service';
+import { success, error, HTTP_STATUS } from '../utils/response';
+import { logger } from '../utils/logger';
+import { IWechatLoginRequest } from '../types/user';
 
 /**
  * 认证控制器类

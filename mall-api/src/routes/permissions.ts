@@ -6,7 +6,7 @@
  */
 
 import Router from '@koa/router';
-import { permissionController } from '../controllers/permission-controller.js';
+import { permissionController } from '../controllers/permission-controller';
 
 const router = new Router();
 

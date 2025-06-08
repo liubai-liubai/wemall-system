@@ -6,8 +6,8 @@
  */
 
 import { Context, Next } from 'koa';
-import { swaggerSpec } from '../config/swagger.js';
-import { logger } from '../utils/logger.js';
+import { swaggerSpec } from '../config/swagger';
+import { logger } from '../utils/logger';
 
 /**
  * 获取优化后的Swagger UI HTML页面

@@ -6,13 +6,13 @@
  */
 
 import { Context } from 'koa';
-import { departmentService } from '../services/department-service.js';
-import { success, error } from '../utils/response.js';
+import { departmentService } from '../services/department-service';
+import { success, error } from '../utils/response';
 import { 
   IDepartmentQueryParams, 
   ICreateDepartmentRequest, 
   IUpdateDepartmentRequest 
-} from '../types/system.js';
+} from '../types/system';
 
 export class DepartmentController {
   /**

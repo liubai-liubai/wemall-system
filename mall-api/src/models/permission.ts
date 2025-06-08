@@ -5,7 +5,7 @@
  * @since 1.0.0
  */
 
-import { IPermission, IMenuPermission, PermissionType } from '../types/system.js';
+import { IPermission, IMenuPermission, PermissionType } from '../types/system';
 
 /**
  * 权限实体模型

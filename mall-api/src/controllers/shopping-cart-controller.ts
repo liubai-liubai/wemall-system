@@ -6,7 +6,7 @@
  */
 
 import { Context, Next } from 'koa';
-import { ShoppingCartService } from '../services/shopping-cart-service.js';
+import { ShoppingCartService } from '../services/shopping-cart-service';
 import { 
   addToCartSchema,
   updateCartSchema,
@@ -16,16 +16,17 @@ import {
   cartIdSchema,
   validateCartSchema,
   clearCartSchema
-} from '../schemas/shopping-cart-schemas.js';
+} from '../schemas/shopping-cart-schemas';
 import { 
   AddToCartRequest,
   UpdateCartItemRequest,
   BatchCartRequest,
+  ValidateCartRequest,
   CartResponse,
   CartListResponse,
   BatchCartResponse
-} from '../types/shopping-cart.js';
-import { ApiResponse, PageResponse } from '../types/common.js';
+} from '../types/shopping-cart';
+import { ApiResponse, PageResponse } from '../types/common';
 
 const shoppingCartService = new ShoppingCartService();
 
@@ -740,7 +741,7 @@ export class ShoppingCartController {
         return;
       }
 
-      const cartIds = ctx.request.body?.cartIds;
+      const { cartIds } = ctx.request.body as ValidateCartRequest;
 
       // 调用服务层
       const validation = await shoppingCartService.validateCart(userId, cartIds);

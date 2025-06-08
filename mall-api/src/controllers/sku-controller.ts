@@ -6,7 +6,7 @@
  */
 
 import { Context } from 'koa';
-import { SkuService } from '../services/sku-service.js';
+import { SkuService } from '../services/sku-service';
 import {
   skuCreateSchema,
   skuUpdateSchema,
@@ -15,8 +15,8 @@ import {
   skuStockAdjustSchema,
   skuIdSchema,
   productIdSchema
-} from '../schemas/sku-schemas.js';
-import { ApiResponse, PageResponse } from '../types/common.js';
+} from '../schemas/sku-schemas';
+import { ApiResponse, PageResponse } from '../types/common';
 
 export class SkuController {
   private skuService: SkuService;

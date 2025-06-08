@@ -6,14 +6,14 @@
  */
 
 import { Context } from 'koa';
-import { adminUserService } from '../services/admin-user-service.js';
-import { success, error } from '../utils/response.js';
+import { adminUserService } from '../services/admin-user-service';
+import { success, error } from '../utils/response';
 import { 
   IAdminUserQueryParams, 
   ICreateAdminUserRequest, 
   IUpdateAdminUserRequest,
   IAdminLoginRequest 
-} from '../types/system.js';
+} from '../types/system';
 
 export class AdminUserController {
   /**

@@ -12,7 +12,7 @@
  */
 
 import Router from '@koa/router';
-import { DashboardController } from '../controllers/dashboard-controller.js';
+import { DashboardController } from '../controllers/dashboard-controller';
 
 const router = new Router();
 

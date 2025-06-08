@@ -5,7 +5,7 @@
  */
 
 import Router from '@koa/router';
-import { memberPointController } from '../controllers/member-point-controller.js';
+import { memberPointController } from '../controllers/member-point-controller';
 
 const router = new Router({
   prefix: '/api/v1/member/points'

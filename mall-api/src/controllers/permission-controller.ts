@@ -6,14 +6,14 @@
  */
 
 import { Context } from 'koa';
-import { permissionService } from '../services/permission-service.js';
-import { success, error } from '../utils/response.js';
+import { permissionService } from '../services/permission-service';
+import { success, error } from '../utils/response';
 import { 
   IPermissionQueryParams, 
   ICreatePermissionRequest, 
   IUpdatePermissionRequest,
   PermissionType 
-} from '../types/system.js';
+} from '../types/system';
 
 export class PermissionController {
   /**

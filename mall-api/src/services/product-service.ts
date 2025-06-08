@@ -13,8 +13,8 @@ import {
   IProductQueryParams,
   IProductDetail,
   CategoryStatus
-} from '../types/product.js';
-import { PageData } from '../types/common.js';
+} from '../types/product';
+import { PageData } from '../types/common';
 
 const prisma = new PrismaClient();
 

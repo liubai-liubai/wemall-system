@@ -6,8 +6,8 @@
  */
 
 import { Context } from 'koa';
-import { success, error, HTTP_STATUS } from '../utils/response.js';
-import { prisma } from '../config/database.js';
+import { success, error, HTTP_STATUS } from '../utils/response';
+import { prisma } from '../config/database';
 
 /**
  * 基础健康状态接口

@@ -13,9 +13,9 @@ import {
   IPermissionQueryParams,
   IMenuPermission,
   PermissionType
-} from '../types/system.js';
-import { PermissionModel, PermissionDTO, MenuPermissionDTO, PermissionTreeNode } from '../models/index.js';
-import { formatPermission } from '../utils/format.js';
+} from '../types/system';
+import { PermissionModel, PermissionDTO, MenuPermissionDTO, PermissionTreeNode } from '../models/index';
+import { formatPermission } from '../utils/format';
 
 const prisma = new PrismaClient();
 

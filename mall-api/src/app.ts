@@ -1,16 +1,16 @@
 import Koa from 'koa';
 import bodyParser from 'koa-bodyparser';
 import cors from '@koa/cors';
-import { prisma, initDatabase, closeDatabase } from './config/database.js';
-import { success, error } from './utils/response.js';
-import { logger } from './utils/logger.js';
+import { prisma, initDatabase, closeDatabase } from './config/database';
+import { success, error } from './utils/response';
+import { logger } from './utils/logger';
 import { 
   IHealthCheckData, 
   IDatabaseTestData, 
   IErrorData 
-} from './types/common.js';
-import mainRouter from './routes/index.js';
-import { swaggerUI, docsRedirect } from './middleware/swagger.js';
+} from './types/common';
+import mainRouter from './routes/index';
+import { swaggerUI, docsRedirect } from './middleware/swagger';
 
 /**
  * 创建Koa应用实例

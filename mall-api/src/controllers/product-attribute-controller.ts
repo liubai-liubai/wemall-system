@@ -6,15 +6,15 @@
  */
 
 import { Context } from 'koa';
-import { ProductAttributeService } from '../services/product-attribute-service.js';
+import { ProductAttributeService } from '../services/product-attribute-service';
 import {
   createAttributeSchema,
   updateAttributeSchema,
   attributeQuerySchema,
   attributeIdSchema,
   productIdSchema
-} from '../schemas/product-attribute-schemas.js';
-import { ApiResponse, PageResponse } from '../types/common.js';
+} from '../schemas/product-attribute-schemas';
+import { ApiResponse, PageResponse } from '../types/common';
 
 export class ProductAttributeController {
   private attributeService: ProductAttributeService;

@@ -6,7 +6,7 @@
  */
 
 import Router from '@koa/router';
-import { departmentController } from '../controllers/department-controller.js';
+import { departmentController } from '../controllers/department-controller';
 
 const router = new Router();
 

@@ -11,9 +11,9 @@ import {
   ICreateDepartmentRequest, 
   IUpdateDepartmentRequest,
   IDepartmentQueryParams
-} from '../types/system.js';
-import { DepartmentModel, DepartmentDTO, DepartmentSimpleDTO, DepartmentTreeNode } from '../models/index.js';
-import { formatDepartment } from '../utils/format.js';
+} from '../types/system';
+import { DepartmentModel, DepartmentDTO, DepartmentSimpleDTO, DepartmentTreeNode } from '../models/index';
+import { formatDepartment } from '../utils/format';
 
 const prisma = new PrismaClient();
 

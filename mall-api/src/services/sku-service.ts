@@ -13,7 +13,7 @@ import {
   ISkuDetail,
   ISkuStockStats,
   ISkuBatchParams
-} from '../types/sku.js';
+} from '../types/sku';
 
 const prisma = new PrismaClient();
 

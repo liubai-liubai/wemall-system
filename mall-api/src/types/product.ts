@@ -6,7 +6,7 @@
  */
 
 import { Decimal } from '@prisma/client/runtime/library';
-import { PageQuery } from './common.js';
+import { PageQuery } from './common';
 
 /**
  * 商品状态枚举

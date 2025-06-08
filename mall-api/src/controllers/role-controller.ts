@@ -6,13 +6,13 @@
  */
 
 import { Context } from 'koa';
-import { roleService } from '../services/role-service.js';
-import { success, error } from '../utils/response.js';
+import { roleService } from '../services/role-service';
+import { success, error } from '../utils/response';
 import { 
   IRoleQueryParams, 
   ICreateRoleRequest, 
   IUpdateRoleRequest 
-} from '../types/system.js';
+} from '../types/system';
 
 export class RoleController {
   /**

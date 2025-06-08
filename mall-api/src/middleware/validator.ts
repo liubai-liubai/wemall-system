@@ -7,7 +7,7 @@
 
 import Joi from 'joi';
 import { Context, Next } from 'koa';
-import { ApiResponse } from '../types/common.js';
+import { ApiResponse } from '../types/common';
 
 /**
  * Koa中间件：验证请求体

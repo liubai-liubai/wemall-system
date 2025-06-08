@@ -6,7 +6,7 @@
  */
 
 import Router from '@koa/router';
-import { ShoppingCartController } from '../controllers/shopping-cart-controller.js';
+import { ShoppingCartController } from '../controllers/shopping-cart-controller';
 
 const router = new Router({
   prefix: '/api/v1'
