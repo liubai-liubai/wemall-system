@@ -14,12 +14,12 @@ import {
   IAdminUserQueryParams,
   IAdminLoginRequest,
   IAdminLoginResponse
-} from '../types/system.js';
-import { PageData } from '../types/common.js';
-import { AdminUserModel, AdminUserDTO } from '../models/index.js';
-import { jwtUtils } from '../utils/jwt.js';
-import { permissionService } from './permission-service.js';
-import { formatAdminUser } from '../utils/format.js';
+} from '../types/system';
+import { PageData } from '../types/common';
+import { AdminUserModel, AdminUserDTO } from '../models/index';
+import { jwtUtils } from '../utils/jwt';
+import { permissionService } from './permission-service';
+import { formatAdminUser } from '../utils/format';
 
 const prisma = new PrismaClient();
 

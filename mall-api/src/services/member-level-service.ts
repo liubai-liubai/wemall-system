@@ -5,7 +5,7 @@
  * @since 1.0.0
  */
 
-import { prisma } from '../config/database.js';
+import { prisma } from '../config/database';
 import { 
   IMemberLevel,
   ICreateMemberLevelRequest,
@@ -13,8 +13,8 @@ import {
   IMemberLevelQueryParams,
   IMemberLevelListResponse,
   MemberStatus
-} from '../types/member.js';
-import { logger } from '../utils/logger.js';
+} from '../types/member';
+import { logger } from '../utils/logger';
 
 export class MemberLevelService {
   /**
