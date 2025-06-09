@@ -134,13 +134,13 @@ export class AuthHelper {
     const adminUserData = {
       id: userId,
       username: userData.username || `test_admin_${Date.now()}`,
-      nickname: userData.nickname || '测试管理员',
+      real_name: userData.nickname || '测试管理员',
       email: userData.email || `test.admin.${Date.now()}@example.com`,
       phone: userData.phone || `1380000${String(Date.now()).slice(-4)}`,
       avatar: userData.avatar || 'https://via.placeholder.com/100x100',
       password: 'test_password_hash', // 实际应该是哈希值
       status: userData.status ?? 1,
-      department_id: 'dept-default-001',
+      department_id: null,
       created_at: new Date(),
       updated_at: new Date()
     };
@@ -167,7 +167,7 @@ export class AuthHelper {
     return {
       id: userId,
       username: adminUserData.username,
-      nickname: adminUserData.nickname,
+      nickname: adminUserData.real_name,
       email: adminUserData.email,
       phone: adminUserData.phone,
       avatar: adminUserData.avatar,
